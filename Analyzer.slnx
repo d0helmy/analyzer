@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="src/Analyzer/Analyzer.csproj" />
   <Project Path="src/Analyzer.Tests/Analyzer.Tests.csproj" />
+  <Project Path="samples/Analyzer.Host/Analyzer.Host.csproj" />
+  <Project Path="aspire/Analyzer.AppHost/Analyzer.AppHost.csproj" />
 </Solution>

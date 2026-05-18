@@ -1,6 +1,10 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Allow `17.*` floating on host-side Umbraco meta-packages so the
+         sample host tracks Umbraco minor releases without per-bump
+         edits. RCL packages remain strictly pinned to 17.3.5. -->
+    <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
   </PropertyGroup>
 
   <!--
@@ -8,10 +12,28 @@
     Package selection mirrors Customizer's choices for symmetry
     between the two co-deployed products (see
     ../customizer/Directory.Packages.props).
+
+    `Umbraco.Cms.Web.Common` + `Umbraco.Cms.Web.Website` are referenced
+    by the RCL (src/Analyzer); the meta `Umbraco.Cms` package and the
+    `DevelopmentMode.Backoffice` helper are referenced by the sample
+    host (samples/Analyzer.Host) for clone-and-go local dev.
   -->
   <ItemGroup>
     <PackageVersion Include="Umbraco.Cms.Web.Common" Version="17.3.5" />
     <PackageVersion Include="Umbraco.Cms.Web.Website" Version="17.3.5" />
+    <PackageVersion Include="Umbraco.Cms" Version="17.*" />
+    <PackageVersion Include="Umbraco.Cms.DevelopmentMode.Backoffice" Version="17.*" />
+    <PackageVersion Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
+  </ItemGroup>
+
+  <!--
+    Aspire — used by aspire/Analyzer.AppHost to orchestrate the sample
+    Umbraco host against a SQL Server container for clone-and-go local
+    dev. Versions mirror ../customizer/aspire/Customizer.AppHost.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.3.1" />
+    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.3.1" />
   </ItemGroup>
 
   <!--
