@@ -1,6 +1,32 @@
 <!--
 Sync Impact Report
 ==================
+Version change: 1.1.0 → 1.1.1 (PATCH; clarification of Principle IV
+wording. The MUST-register-a-cascade-step gate is unchanged; the
+"re-keys" phrasing is broadened to include delete / soft-delete /
+re-projection per the participation-pattern menu Customizer's
+`GoalReachedCascadeStep` already established.)
+
+Principle changes:
+  - I, II, III, V, VI, VII, VIII, IX, X: unchanged.
+  - IV: clarified — "Customizer's operator-facing erasure action
+    re-keys it deterministically" replaced with explicit participation-
+    pattern menu (delete / soft-delete / re-projection). No new
+    requirement; no removed requirement; the gate criterion is
+    unchanged.
+
+Trigger: slice-002 /speckit-analyze finding C1 — the cascade-step
+hard-delete chosen for `analyzerEventReceipt` (matching Customizer's
+`GoalReachedCascadeStep` precedent) was load-bearing for slice-002's
+plan-gate-IV PASS verdict, but the constitution's "re-keys" wording
+could be misread as mandating per-table re-key semantics.
+
+Templates requiring updates: none.
+
+---
+
+Prior Sync Impact Report (v1.0.0 → v1.1.0)
+==========================================
 Version change: 1.0.0 → 1.1.0 (MINOR; importing five core principles from
 the Customizer constitution with adaptations for Analyzer's domain, plus
 two new Section-2 subsections. No existing principle removed or
@@ -165,9 +191,17 @@ Analyzer-owned event and side table (`analyzerSession`,
 `analyzerScrollSample`, `analyzerSearchEvent`, and any future addition)
 is foreign-keyed to `customizerPageview.Key` and/or
 `customizerVisitorProfile.Key`. Every such table MUST register an
-`IAnonymizationCascadeStep` so Customizer's operator-facing erasure
-action re-keys it deterministically; the absence of a cascade-step
-registration for a new Analyzer table is a Constitution Check failure.
+`IAnonymizationCascadeStep`. Customizer's operator-facing erasure
+action re-keys the visitor's identity deterministically (overwriting
+`IdentityRef` from `oid:…` to `anonymized:…` on the same
+`customizerVisitorProfile.Key`); each Analyzer table participates by
+doing what is table-appropriate — hard-delete (the established
+pattern; matches Customizer's `GoalReachedCascadeStep` and slice-002's
+`AnalyzerEventReceiptCascadeStep`), soft-delete, or re-projection —
+chosen per slice and pinned in the slice's `plan.md` Constitution
+Check section. The absence of a cascade-step registration for a new
+Analyzer table is a Constitution Check failure regardless of which
+participation pattern the table chooses.
 
 Rationale: data integrity and erasure compliance are bounded by the
 "one row per pageview" invariant Customizer owns and by a complete
@@ -536,4 +570,4 @@ plan's Constitution Check is the primary mechanism.
 
 For day-to-day runtime guidance see [`CLAUDE.md`](../../CLAUDE.md).
 
-**Version**: 1.1.0 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-18
+**Version**: 1.1.1 | **Ratified**: 2026-05-18 | **Last Amended**: 2026-05-18
