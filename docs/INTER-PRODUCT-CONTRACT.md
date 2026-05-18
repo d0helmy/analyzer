@@ -363,24 +363,30 @@ additive on top of Customizer's existing substrate.
    `INotificationAsyncHandler<PageviewCaptured>` pattern. No further
    action.
 
-2. **`Pageview.UserAgent` field on Customizer (Analyzer slice 003
-   prereq)** — Analyzer's session resolver needs a stable per-request
-   `User-Agent` value to derive a truncated SHA-256 device-key per
-   `(visitor, device)` pair. Reading UA from
-   `IHttpContextAccessor` at handler-entry is unreliable under
-   typical fire-and-forget timing (handler runs on a `Task.Run` thread
-   after the request scope is disposed; `HttpContext` returns null).
-   The resolution: Customizer's `PageviewCaptureMiddleware` captures
-   UA synchronously on the request thread and threads it through the
-   `PageviewCaptured` notification as the 10th positional record
-   parameter on `Pageview`. This is a one-PR additive change on
-   Customizer (cross-product slice `cross-product/pageview-user-agent`
-   per `specs/003-session-tracking/customizer-prereq.md`). **In-memory
-   only** — `PageviewDto` does not gain a column; no Customizer-side
-   migration. Analyzer hashes UA to `deviceKey` before its own
-   persistence. MINOR-additive per Customizer's positional-record
-   additivity convention; pinning snapshot unchanged (`Pageview`'s
-   namespace is not in Customizer's pinned namespace list).
+2. ~~**`Pageview.UserAgent` field on Customizer (Analyzer slice 003
+   prereq)**~~ — ✅ **Ratified + shipped 2026-05-18 at Customizer
+   `5273c38` (cross-product/pageview-user-agent, PR
+   [#37](https://github.com/d0helmy/customizer/pull/37) — rebase-
+   merged per `specs/003-session-tracking/customizer-prereq.md`).**
+   10th positional record param on `Pageview` (slot 10, default
+   null). `PageviewCaptureMiddleware` captures
+   `Request.Headers.UserAgent` synchronously on the request thread
+   (private `ExtractUserAgent(HttpContext)` helper, mirroring
+   `PersonalizationResolutionFilter.ExtractUserAgent`) and threads
+   it through the `PageviewCaptured` notification. **In-memory
+   only** — `PageviewDto` does not gain a column; no Customizer-
+   side migration. The DTO write path drops UA;
+   `PageviewDto.ToPageview` always reconstructs read-side
+   `Pageview`s with `UserAgent: null`. Analyzer slice 003 hashes UA
+   to a truncated SHA-256 `deviceKey` before its own persistence;
+   raw UA never sits at rest on Customizer storage. MINOR-additive
+   per Customizer's positional-record additivity convention
+   (slice-007 UTM trio precedent + `PageviewPositionalRecordAdditivityTests`
+   guard, extended at PR #37 with two new tests for the 10th slot).
+   Pinning snapshot unchanged — `Pageview` lives in
+   `Customizer.Features.Visitors.Domain` (not in the pinned-
+   namespace list); `PageviewCaptured`'s pinned line references
+   `Pageview` by type-name only.
 
 3. **Per-EntraID profile enrichment (D1 / `FR-ENR-*`)** — Analyzer
    needs to attach `department`, `officeLocation`, etc. to the visitor
