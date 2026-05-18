@@ -1,3 +1,20 @@
+TYPE Analyzer.Analytics.AnalyticsCustomEvent : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsCustomEvent, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR(System.Guid EventKey, System.Guid SessionKey, System.Guid VisitorProfileKey, System.Nullable<System.Guid> ReceiptKey, System.String Category, System.String Action, System.String Label, System.Nullable<System.Decimal> Value, System.DateTimeOffset ReceivedUtc)
+  PROP System.String Action { get; set; }
+  PROP System.String Category { get; set; }
+  PROP System.Guid EventKey { get; set; }
+  PROP System.String Label { get; set; }
+  PROP System.Nullable<System.Guid> ReceiptKey { get; set; }
+  PROP System.DateTimeOffset ReceivedUtc { get; set; }
+  PROP System.Guid SessionKey { get; set; }
+  PROP System.Nullable<System.Decimal> Value { get; set; }
+  PROP System.Guid VisitorProfileKey { get; set; }
+  METHOD Analyzer.Analytics.AnalyticsCustomEvent <Clone>$()
+  METHOD System.Void Deconstruct(System.Guid& EventKey, System.Guid& SessionKey, System.Guid& VisitorProfileKey, System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& ReceiptKey, System.String& Category, System.String& Action, System.String& Label, System.Nullable`1[[System.Decimal, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& Value, System.DateTimeOffset& ReceivedUtc)
+  METHOD virtual System.Boolean Equals(Analyzer.Analytics.AnalyticsCustomEvent other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()
 TYPE Analyzer.Analytics.AnalyticsEventReceipt : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsEventReceipt, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
   CTOR(System.Guid Id, System.Guid PageviewKey, System.Guid VisitorProfileKey, System.DateTimeOffset ReceivedUtc)
   PROP System.Guid Id { get; set; }
@@ -27,6 +44,7 @@ TYPE Analyzer.Analytics.AnalyticsSession : sealed class : interfaces=[System.IEq
   METHOD virtual System.Int32 GetHashCode()
   METHOD virtual System.String ToString()
 TYPE Analyzer.Analytics.IAnalyticsEventStateProvider : interface : <>
+  PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsCustomEvent> CurrentRequestCustomEvents { get; }
   PROP Analyzer.Analytics.AnalyticsEventReceipt CurrentRequestReceipt { get; }
   PROP Analyzer.Analytics.AnalyticsSession CurrentSession { get; }
 TYPE Analyzer.Features.Visitors.Application.Contracts.IVisitorIdentifier : interface : <>
