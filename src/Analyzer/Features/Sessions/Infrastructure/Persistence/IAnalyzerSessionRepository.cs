@@ -56,6 +56,33 @@ internal interface IAnalyzerSessionRepository
         Guid sessionKey,
         DateTimeOffset logicalCloseUtc,
         CancellationToken ct);
+
+    /// <summary>
+    /// Slice 003 US2 — soft-anonymise every active-or-closed session
+    /// row for <paramref name="visitorProfileKey"/>. Sets
+    /// <c>anonymizedUtc = now</c> + clears <c>deviceKey</c>; preserves
+    /// aggregates (<c>pageviewCount</c>, <c>startUtc</c>, <c>endUtc</c>).
+    /// Idempotent — <c>WHERE anonymizedUtc IS NULL</c> excludes
+    /// already-anonymised rows. Returns the sessionKeys that were
+    /// affected so the cascade step can evict cache entries.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> SoftAnonymizeByVisitorKeyAsync(
+        Guid visitorProfileKey,
+        DateTimeOffset nowUtc,
+        CancellationToken ct);
+
+    /// <summary>
+    /// Slice 003 US3 — sweep eligible sessions: rows where
+    /// <c>isActive = 1 AND lastActivityUtc &lt; cutoff</c>. For each
+    /// match, close with <c>endUtc = lastActivityUtc + inactivityTimeout</c>
+    /// (logical close time, NOT now — spec Assumption #5). Bounded by
+    /// <paramref name="batchSize"/>. Returns the sessionKeys closed.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> SweepEligibleAsync(
+        DateTimeOffset cutoff,
+        TimeSpan inactivityTimeout,
+        int batchSize,
+        CancellationToken ct);
 }
 
 /// <summary>

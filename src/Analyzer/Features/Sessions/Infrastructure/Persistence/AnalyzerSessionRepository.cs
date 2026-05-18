@@ -116,6 +116,92 @@ internal sealed class AnalyzerSessionRepository : IAnalyzerSessionRepository
         scope.Complete();
     }
 
+    public async Task<IReadOnlyList<Guid>> SoftAnonymizeByVisitorKeyAsync(
+        Guid visitorProfileKey,
+        DateTimeOffset nowUtc,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        using var scope = _scopeProvider.CreateScope();
+
+        // SELECT the sessionKeys first so we can return them; the UPDATE
+        // is restricted to that set + the NULL-anonymizedUtc predicate
+        // for idempotency.
+        var affected = await scope.Database
+            .FetchAsync<Guid>(
+                $"SELECT sessionKey FROM {Constants.Database.AnalyzerSession} " +
+                $"WHERE visitorProfileKey = @0 AND anonymizedUtc IS NULL",
+                visitorProfileKey)
+            .ConfigureAwait(false);
+
+        if (affected.Count > 0)
+        {
+            await scope.Database.ExecuteAsync(
+                $"UPDATE {Constants.Database.AnalyzerSession} " +
+                $"SET anonymizedUtc = @0, deviceKey = '' " +
+                $"WHERE visitorProfileKey = @1 AND anonymizedUtc IS NULL",
+                nowUtc,
+                visitorProfileKey).ConfigureAwait(false);
+        }
+
+        scope.Complete();
+        return affected;
+    }
+
+    public async Task<IReadOnlyList<Guid>> SweepEligibleAsync(
+        DateTimeOffset cutoff,
+        TimeSpan inactivityTimeout,
+        int batchSize,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (batchSize <= 0)
+        {
+            return Array.Empty<Guid>();
+        }
+
+        using var scope = _scopeProvider.CreateScope();
+
+        // SELECT eligible-row keys (bounded by batchSize) + their
+        // lastActivityUtc so we can compute the logical close time
+        // client-side, then UPDATE each by sessionKey. Two round-trips
+        // but bounded by batchSize; the alternative
+        // `UPDATE TOP (@n) … OUTPUT INSERTED.sessionKey` works only on
+        // SQL Server, and slice-002 / slice-003 keep raw SQL portable
+        // across providers (lesson #39 SQLite-skip pattern doesn't
+        // extend to UPDATE TOP without a CTE workaround).
+        var eligible = await scope.Database
+            .FetchAsync<SweepRow>(
+                $"SELECT TOP (@0) sessionKey AS SessionKey, lastActivityUtc AS LastActivityUtc " +
+                $"FROM {Constants.Database.AnalyzerSession} " +
+                $"WHERE isActive = 1 AND lastActivityUtc < @1 " +
+                $"ORDER BY lastActivityUtc",
+                batchSize,
+                cutoff)
+            .ConfigureAwait(false);
+
+        if (eligible.Count == 0)
+        {
+            scope.Complete();
+            return Array.Empty<Guid>();
+        }
+
+        foreach (var row in eligible)
+        {
+            var endUtc = row.LastActivityUtc + inactivityTimeout;
+            await scope.Database.ExecuteAsync(
+                $"UPDATE {Constants.Database.AnalyzerSession} " +
+                $"SET isActive = 0, endUtc = @0 " +
+                $"WHERE sessionKey = @1 AND isActive = 1",
+                endUtc,
+                row.SessionKey).ConfigureAwait(false);
+        }
+
+        scope.Complete();
+        return eligible.Select(r => r.SessionKey).ToArray();
+    }
+
     private static AnalyticsSession ToProjection(AnalyzerSessionDto dto) =>
         new(
             SessionKey: dto.SessionKey,
@@ -133,5 +219,16 @@ internal sealed class AnalyzerSessionRepository : IAnalyzerSessionRepository
     {
         public DateTimeOffset StartUtc { get; set; }
         public int PageviewCount { get; set; }
+    }
+
+    /// <summary>
+    /// Holder for the per-row sweep SELECT — sweeper needs each
+    /// session's <c>lastActivityUtc</c> to compute the logical close
+    /// time.
+    /// </summary>
+    private sealed class SweepRow
+    {
+        public Guid SessionKey { get; set; }
+        public DateTimeOffset LastActivityUtc { get; set; }
     }
 }

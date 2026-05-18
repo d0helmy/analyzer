@@ -28,7 +28,7 @@ public sealed class AnalyzerSessionResolverTests
         // Stage post-extend column values.
         repo.NextExtend = new SessionExtendResult(T0, 2);
 
-        var result = await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(5), default);
+        var result = await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(5), TestContext.Current.CancellationToken);
 
         result.SessionKey.Should().Be(sessionKey);
         result.Projection.PageviewCount.Should().Be(2);
@@ -57,7 +57,7 @@ public sealed class AnalyzerSessionResolverTests
         };
         var (resolver, _) = NewResolver(repo);
 
-        var result = await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(5), default);
+        var result = await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(5), TestContext.Current.CancellationToken);
 
         result.SessionKey.Should().Be(sessionKey);
         result.Projection.PageviewCount.Should().Be(2);
@@ -78,7 +78,7 @@ public sealed class AnalyzerSessionResolverTests
             new AnalyticsSessionCacheEntry(staleSession, T0, T0, 1));
 
         // 30+ minute gap → stale.
-        var result = await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(61), default);
+        var result = await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(61), TestContext.Current.CancellationToken);
 
         result.SessionKey.Should().NotBe(staleSession);
         result.Projection.PageviewCount.Should().Be(1);
@@ -94,7 +94,7 @@ public sealed class AnalyzerSessionResolverTests
         var repo = new FakeRepository { NextGetLatest = null };
         var (resolver, _) = NewResolver(repo);
 
-        var result = await resolver.ResolveAsync(visitor, "UA", T0, default);
+        var result = await resolver.ResolveAsync(visitor, "UA", T0, TestContext.Current.CancellationToken);
 
         result.Projection.PageviewCount.Should().Be(1);
         result.Projection.IsActive.Should().BeTrue();
@@ -128,7 +128,7 @@ public sealed class AnalyzerSessionResolverTests
 
         var (resolver, _) = NewResolver(repo);
 
-        var result = await resolver.ResolveAsync(visitor, "UA", T0, default);
+        var result = await resolver.ResolveAsync(visitor, "UA", T0, TestContext.Current.CancellationToken);
 
         result.SessionKey.Should().Be(winnerSessionKey);
         result.Projection.PageviewCount.Should().Be(2);
@@ -144,7 +144,7 @@ public sealed class AnalyzerSessionResolverTests
         var repo = new FakeRepository();
         var (resolver, _) = NewResolver(repo);
 
-        var result = await resolver.ResolveAsync(visitor, null, T0, default);
+        var result = await resolver.ResolveAsync(visitor, null, T0, TestContext.Current.CancellationToken);
 
         result.Projection.PageviewCount.Should().Be(1);
         repo.LastInsert!.DeviceKey.Should().Be(DeviceKeyHasher.Compute(null));
@@ -164,19 +164,19 @@ public sealed class AnalyzerSessionResolverTests
             NullLogger<AnalyzerSessionResolver>.Instance);
 
         // First call: cache miss → opens.
-        await resolver.ResolveAsync(visitor, "UA", T0, default);
+        await resolver.ResolveAsync(visitor, "UA", T0, TestContext.Current.CancellationToken);
         repo.InsertCalls.Should().Be(1);
 
         // 20 minutes later: still fresh under 30-min timeout → extend.
         repo.NextExtend = new SessionExtendResult(T0, 2);
-        await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(20), default);
+        await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(20), TestContext.Current.CancellationToken);
         repo.ExtendCalls.Should().Be(1);
         repo.CloseCalls.Should().Be(0);
 
         // Reduce timeout to 5 minutes; 20-minute-old cache entry now stale.
         monitor.Set(new AnalyzerSessionOptions { InactivityTimeoutMinutes = 5, CacheCapacity = 100 });
 
-        await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(40), default);
+        await resolver.ResolveAsync(visitor, "UA", T0.AddMinutes(40), TestContext.Current.CancellationToken);
         repo.CloseCalls.Should().Be(1);
     }
 
@@ -252,6 +252,14 @@ public sealed class AnalyzerSessionResolverTests
             LastCloseSessionKey = sessionKey;
             return Task.CompletedTask;
         }
+
+        public Task<IReadOnlyList<Guid>> SoftAnonymizeByVisitorKeyAsync(
+            Guid visitorProfileKey, DateTimeOffset nowUtc, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());
+
+        public Task<IReadOnlyList<Guid>> SweepEligibleAsync(
+            DateTimeOffset cutoff, TimeSpan inactivityTimeout, int batchSize, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());
     }
 
     private sealed class FakeDbException : DbException
