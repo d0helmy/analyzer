@@ -67,5 +67,15 @@ public static class Constants
         /// <c>customizerVisitorProfile(key)</c>.
         /// </summary>
         public const string AnalyzerEventReceipt = "analyzerEventReceipt";
+
+        /// <summary>
+        /// Slice 003 — one row per session (a bounded sequence of
+        /// pageviews by one visitor on one device within the configured
+        /// inactivity timeout). Hard FK to
+        /// <c>customizerVisitorProfile(key)</c>; partial unique index on
+        /// <c>(visitorProfileKey, deviceKey) WHERE isActive = 1</c>
+        /// enforces "exactly one active session per visitor+device".
+        /// </summary>
+        public const string AnalyzerSession = "analyzerSession";
     }
 }

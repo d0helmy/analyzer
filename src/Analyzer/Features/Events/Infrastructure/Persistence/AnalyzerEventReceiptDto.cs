@@ -34,4 +34,14 @@ internal sealed class AnalyzerEventReceiptDto
     [Column("receivedUtc")]
     [Index(IndexTypes.NonClustered, Name = "IDX_analyzerEventReceipt_receivedUtc")]
     public DateTimeOffset ReceivedUtc { get; set; }
+
+    /// <summary>
+    /// Slice 003 — soft FK to <c>analyzerSession.sessionKey</c>. Added
+    /// additively by <c>M0002</c>; pre-existing slice-002 receipts keep
+    /// <c>null</c> (no back-fill — pre-sessions cohort per FR-004).
+    /// </summary>
+    [Column("sessionKey")]
+    [NullSetting(NullSetting = NullSettings.Null)]
+    [Index(IndexTypes.NonClustered, Name = "IDX_analyzerEventReceipt_sessionKey")]
+    public Guid? SessionKey { get; set; }
 }

@@ -1,5 +1,6 @@
 using System.Data.Common;
 using Analyzer.Analytics;
+using Analyzer.Features.Common.Persistence;
 using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Infrastructure.Scoping;
 
@@ -37,6 +38,7 @@ internal sealed class AnalyzerEventReceiptRepository : IAnalyzerEventReceiptRepo
             PageviewKey = receipt.PageviewKey,
             VisitorProfileKey = receipt.VisitorProfileKey,
             ReceivedUtc = receipt.ReceivedUtc,
+            SessionKey = receipt.SessionKey,
         };
 
         using var scope = _scopeProvider.CreateScope();
@@ -45,7 +47,7 @@ internal sealed class AnalyzerEventReceiptRepository : IAnalyzerEventReceiptRepo
             await scope.Database.InsertAsync(dto).ConfigureAwait(false);
             scope.Complete();
         }
-        catch (DbException ex) when (IsUniqueConstraintViolation(ex))
+        catch (DbException ex) when (UniqueConstraintViolationDetector.IsUniqueConstraintViolation(ex))
         {
             _logger.LogDebug(
                 "Duplicate dispatch tolerated for PageviewKey={PageviewKey}",
