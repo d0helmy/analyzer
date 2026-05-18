@@ -11,18 +11,28 @@ The spec carries no `[NEEDS CLARIFICATION]` markers — its two load-bearing dec
 
 ## §1 — Session-resolution mechanism
 
-**Decision**: introduce an internal contract `Analyzer.Features.Sessions.Application.IAnalyzerSessionResolver` with a single method `ValueTask<Guid> ResolveAsync(Guid visitorProfileKey, string userAgent, DateTimeOffset receivedUtc, CancellationToken ct)`. The slice-002 `PageviewCapturedHandler` calls it **before** building the receipt + enqueuing the write op. The resolver does (in order):
+**Decision**: introduce an internal contract `Analyzer.Features.Sessions.Application.IAnalyzerSessionResolver` with a single method `ValueTask<SessionResolutionResult> ResolveAsync(Guid visitorProfileKey, string? userAgent, DateTimeOffset receivedUtc, CancellationToken ct)`. The slice-002 `PageviewCapturedHandler` calls it **before** building the receipt + enqueuing the write op. The `userAgent` argument is sourced from `notification.Pageview.UserAgent` (cross-product prerequisite, see [`customizer-prereq.md`](customizer-prereq.md) — Customizer's `PageviewCaptureMiddleware` captures UA synchronously on the request thread and threads it through the `PageviewCaptured` notification as the 10th positional record param). This is reliable regardless of handler thread timing because the UA value is part of the immutable `Pageview` record carried by the notification, not a read off the (potentially-disposed) `HttpContext`. The resolver does (in order):
 
 1. Compute `deviceKey = DeviceKeyHasher.Compute(userAgent)` (§5).
 2. Check the in-memory LRU cache (`AnalyzerSessionCacheStore`; §2) for `(visitorProfileKey, deviceKey)`.
-3. If cache hit AND `cacheEntry.LastActivityUtc + inactivityTimeout >= receivedUtc` → **extend**: `repository.ExtendAsync(cacheEntry.SessionKey, receivedUtc)` (UPDATE `lastActivityUtc, pageviewCount`); update the cache entry's `LastActivityUtc`. Return `cacheEntry.SessionKey`.
+3. If cache hit AND `cacheEntry.LastActivityUtc + inactivityTimeout >= receivedUtc` → **extend**: `repository.ExtendAsync(cacheEntry.SessionKey, receivedUtc)` returns the post-update `(StartUtc, PageviewCount)` (single UPDATE with `OUTPUT INSERTED.startUtc, INSERTED.pageviewCount` on SQL Server; SELECT-after-UPDATE in same scope for SQLite); update the cache entry's `LastActivityUtc`. Project to `AnalyticsSession` client-side from the cache entry + returned columns (NO second SELECT). Return `SessionResolutionResult { cacheEntry.SessionKey, projection }`.
 4. If cache hit AND stale → **close + open**: `repository.CloseAsync(cacheEntry.SessionKey, cacheEntry.LastActivityUtc + inactivityTimeout)` (UPDATE `isActive = false, endUtc = …`); invalidate cache entry; fall through to step 5.
 5. If cache miss → `repository.GetLatestActiveAsync(visitorProfileKey, deviceKey)`:
-   - Found AND fresh → extend, write to cache, return its `SessionKey`.
+   - Found AND fresh → extend with `OUTPUT`-returned post-update columns; project client-side; cache; return.
    - Found AND stale → close (as step 4), fall through to step 6.
    - Not found → step 6.
-6. **Open**: `repository.InsertAsync(new AnalyzerSessionDto { …, isActive = true, … })`. On unique-violation against the partial unique index `UX_analyzerSession_active_visitor_device` → re-read with `GetLatestActiveAsync` (a concurrent dispatcher won the race; attach to its session — also extends `lastActivityUtc`).
-7. Write the new session to the cache; return its `SessionKey`.
+6. **Open**: `repository.InsertAsync(new AnalyzerSessionDto { …, isActive = true, … })`. On unique-violation against the partial unique index `UX_analyzerSession_active_visitor_device` → re-read with `GetLatestActiveAsync` (a concurrent dispatcher won the race; attach to its session — also extends with `OUTPUT` columns).
+7. Write the new session to the cache; return its `SessionKey` + the just-constructed projection (no SELECT needed; the projection's columns are all known at insert time).
+
+**Per-request SQL budget** (FR-009 ≤ 2 indexed statements per resolution after A7 remediation):
+
+| Path | Statements | Notes |
+|---|---|---|
+| Cache hit + extend | 1 UPDATE (with OUTPUT) | post-update columns returned in one round-trip; projection built client-side |
+| Cache miss + fresh DB row + extend | 1 SELECT + 1 UPDATE (with OUTPUT) | |
+| Cache hit + stale + open new | 1 UPDATE (close) + 1 INSERT | partial-unique-collision retry adds 1 SELECT + 1 UPDATE in the rare race case |
+| Cache miss + no row + open new | 1 SELECT + 1 INSERT | partial-unique-collision retry same as above |
+| Cache miss + stale row + open new | 1 SELECT + 1 UPDATE (close) + 1 INSERT | bounded ≤ 3; lazy-close branch authorised by FR-009 |
 
 The handler then builds the receipt with `SessionKey` populated and enqueues the write op as before.
 
@@ -152,7 +162,7 @@ Under steady-state load, the partial unique index is **never** violated (each vi
 
 ## §5 — `deviceKey` derivation
 
-**Decision**: `DeviceKeyHasher.Compute(string userAgent)` returns a stable 16-hex-character lowercase string derived from `userAgent` via:
+**Decision**: `DeviceKeyHasher.Compute(string? userAgent)` returns a stable 16-hex-character lowercase string derived from `userAgent` via:
 
 ```csharp
 public static string Compute(string? userAgent)
@@ -167,9 +177,9 @@ public static string Compute(string? userAgent)
 }
 ```
 
-A null or whitespace-only UA hashes the empty string deterministically, producing a fixed sentinel device key. This is rare (every real HTTP client sends a UA; the only path that wouldn't is a misconfigured test or a non-HTTP code path) and explicitly tolerated by the spec's edge-case note.
+The UA value is sourced from `notification.Pageview.UserAgent` (cross-product prerequisite — Customizer captures it on the request thread; see [`customizer-prereq.md`](customizer-prereq.md)). A null or whitespace-only UA hashes the empty string deterministically, producing a fixed sentinel device key. This is rare (every real HTTP client sends a UA; the only path that wouldn't is a misconfigured test, a non-HTTP code path, or a pageview captured before the Customizer-side UA prereq lands) and explicitly tolerated by the spec's edge-case note.
 
-**Rationale**: spec Assumption #1 binds the choice. Truncated SHA-256 over the UA string is reproducible across requests, has bounded cardinality (≤ a few hundred distinct UA strings per organisation observed in practice — Chrome, Edge, Firefox, Safari × major version × OS family), and requires zero new storage. No cookie surface (product invariant from `CLAUDE.md`); no fingerprint-grade entropy (only the UA, which is already in the request).
+**Rationale**: spec Assumption #1 binds the choice. Truncated SHA-256 over the UA string is reproducible across requests, has bounded cardinality (≤ a few hundred distinct UA strings per organisation observed in practice — Chrome, Edge, Firefox, Safari × major version × OS family), and requires zero new storage. No cookie surface (product invariant from `CLAUDE.md`); no fingerprint-grade entropy (only the UA, which is already in the request). The UA reaches Analyzer via the immutable `Pageview` record on the notification, NOT via `IHttpContextAccessor` — the latter would be unreliable under typical fire-and-forget timing (handler runs on a `Task.Run` thread after the request scope is disposed; `HttpContextAccessor.HttpContext` returns null per ASP.NET Core's `HttpContextHolder` clearing pattern). See `/speckit-analyze` finding C1 for the deeper architectural rationale.
 
 16-hex-character truncation gives a 64-bit hash space, enough that birthday-paradox collisions only become non-trivial above ~4 billion distinct UAs (far beyond any plausible intranet workload). Customizer's slice-003 visitor-profile cache uses 16-hex as the storage form for hashed UA values where it surfaces them; matching that form keeps the two products' debugging surfaces symmetric.
 
@@ -178,6 +188,7 @@ A null or whitespace-only UA hashes the empty string deterministically, producin
 | Alternative | Why rejected |
 |---|---|
 | Persistent server-issued cookie (random Guid per device) | Violates product invariant "no cookie-consent / opt-out surface." Adds a backoffice operational surface (cookie purge, cookie rotation). |
+| Read UA from `IHttpContextAccessor.HttpContext.Request.Headers.UserAgent` at handler-entry | UNRELIABLE under fire-and-forget timing — handler typically runs after request scope is disposed; `HttpContext` returns null. Was the original plan in this slice's draft; revised after `/speckit-analyze` finding C1 surfaced the issue. Now sourced from `notification.Pageview.UserAgent` (Customizer captures on request thread; immutable record carries the value through to the handler). |
 | Browser fingerprinting (UA + Accept-Language + IP + screen-res via JS) | Outsizes the privacy posture for an intranet; the deploying organisation's compliance team would object. CCPA right-to-delete obligation also makes finer fingerprinting less defensible. |
 | Full SHA-256 (256 bits) instead of truncated | Storage cost negligible difference; reduced readability in audit logs and `analyzerSession` queries; not motivated by collision-rate concerns at this scale. |
 | MD5 truncation | Cryptographic deprecation flag in static analyzers (SHA-256 is the default modern choice); no performance difference at UA-string length. |

@@ -29,9 +29,15 @@ internal interface IAnalyzerSessionResolver
     /// before reaching the resolver).
     /// </param>
     /// <param name="userAgent">
-    /// Raw <c>User-Agent</c> header from the inbound request. Null /
-    /// whitespace tolerated — hashed to a deterministic sentinel
-    /// device key.
+    /// Raw <c>User-Agent</c> as carried on the immutable
+    /// <c>Pageview</c> record by the <c>PageviewCaptured</c>
+    /// notification (cross-product prerequisite — Customizer
+    /// captures synchronously on the request thread; see
+    /// <c>customizer-prereq.md</c>). NOT read from
+    /// <c>IHttpContextAccessor</c> — that path is unreliable under
+    /// typical fire-and-forget handler timing (slice analysis C1).
+    /// Null / whitespace tolerated — hashed to a deterministic
+    /// sentinel device key.
     /// </param>
     /// <param name="receivedUtc">
     /// When the handler observed the notification. Set on the new /
