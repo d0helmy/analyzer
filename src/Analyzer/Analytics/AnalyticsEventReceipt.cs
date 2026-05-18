@@ -49,4 +49,22 @@ public sealed record AnalyticsEventReceipt(
     Guid Id,
     Guid PageviewKey,
     Guid VisitorProfileKey,
-    DateTimeOffset ReceivedUtc);
+    DateTimeOffset ReceivedUtc)
+{
+    /// <summary>
+    /// Slice 003 — soft FK to <c>analyzerSession.sessionKey</c>.
+    /// Populated by the session resolver before the receipt is
+    /// enqueued. <c>null</c> for receipts persisted by slice-002
+    /// deployments — the pre-sessions cohort, intentionally not
+    /// back-filled by <c>M0002</c> per FR-004.
+    /// </summary>
+    /// <remarks>
+    /// Init-only property (NOT a positional record parameter) —
+    /// preserves the slice-002 four-arg constructor signature for
+    /// binary compatibility. Slice-003-and-later code constructs via
+    /// <c>new AnalyticsEventReceipt(id, pvKey, visKey, utc) with
+    /// { SessionKey = sessionKey }</c>. MINOR-additive per
+    /// Constitution Principle X.
+    /// </remarks>
+    public Guid? SessionKey { get; init; }
+}
