@@ -1,10 +1,13 @@
+using Analyzer.Analytics;
 using Analyzer.Features.Events.Application;
+using Analyzer.Features.Events.Application.Anonymization;
 using Analyzer.Features.Events.Infrastructure.Dispatcher;
 using Analyzer.Features.Events.Infrastructure.Persistence;
 using Analyzer.Features.Visitors.Application;
 using Analyzer.Features.Visitors.Application.Contracts;
 using Customizer.Composers;
 using Customizer.Features.Visitors.Application.Contracts;
+using Customizer.Features.Visitors.Application.Contracts.Anonymization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Umbraco.Cms.Core.Composing;
@@ -80,6 +83,16 @@ public sealed class AnalyzerComposer : IComposer
         services.AddTransient<
             INotificationAsyncHandler<PageviewCaptured>,
             PageviewCapturedHandler>();
+
+        // Slice-002 US2 — receipt-deleting cascade step that
+        // participates in Customizer's AnonymizeVisitorProfileHandler
+        // outer scope. Scoped per IAnonymizationCascadeStep convention.
+        services.AddScoped<IAnonymizationCascadeStep, AnalyzerEventReceiptCascadeStep>();
+
+        // Slice-002 US3 — scoped state store + public state provider.
+        // FR-007: scoped per Clarifications Q3 (request-aligned).
+        services.AddScoped<AnalyticsEventStateStore>();
+        services.AddScoped<IAnalyticsEventStateProvider, AnalyticsEventStateProvider>();
     }
 
     internal static bool IsCustomizerRegistered(IServiceCollection services)

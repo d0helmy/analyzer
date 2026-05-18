@@ -2,6 +2,7 @@ using Analyzer.Analytics;
 using Analyzer.Features.Events.Infrastructure.Dispatcher;
 using Customizer.Features.Visitors.Application.Contracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Events;
 
@@ -66,7 +67,15 @@ internal sealed class PageviewCapturedHandler : INotificationAsyncHandler<Pagevi
                 _logger.LogWarning(
                     "Analyzer write queue at capacity ({Capacity}); dropping receipt for PageviewKey={PageviewKey} VisitorProfileKey={VisitorProfileKey}",
                     _queue.Capacity, pv.Key, pv.VisitorProfileKey);
+                return Task.CompletedTask;
             }
+
+            // Slice-002 US3 — opportunistic in-flight state-store
+            // update so the (rare) in-request consumer sees the
+            // receipt via IAnalyticsEventStateProvider. Best-effort:
+            // typically null on a fire-and-forget pageview dispatch
+            // because the request scope has already been disposed.
+            TryUpdateInFlightStateStore(receipt);
         }
         catch (Exception ex)
         {
@@ -80,5 +89,24 @@ internal sealed class PageviewCapturedHandler : INotificationAsyncHandler<Pagevi
         }
 
         return Task.CompletedTask;
+    }
+
+    private void TryUpdateInFlightStateStore(AnalyticsEventReceipt receipt)
+    {
+        try
+        {
+            var requestServices = _httpContextAccessor.HttpContext?.RequestServices;
+            var store = requestServices?.GetService<AnalyticsEventStateStore>();
+            store?.SetCurrentReceipt(receipt);
+        }
+        catch (ObjectDisposedException)
+        {
+            // Request scope already disposed — the common case for
+            // fire-and-forget pageview dispatches. Not an error.
+        }
+        catch (InvalidOperationException)
+        {
+            // Service provider disposed; same case.
+        }
     }
 }
