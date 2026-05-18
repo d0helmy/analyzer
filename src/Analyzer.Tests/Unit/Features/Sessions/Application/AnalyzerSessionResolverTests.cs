@@ -15,6 +15,33 @@ public sealed class AnalyzerSessionResolverTests
     private static readonly DateTimeOffset T0 = new(2026, 5, 18, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public async Task Cache_hit_fresh_CustomEvent_touches_instead_of_extends()
+    {
+        // Slice 004 / T014 — SessionActivityKind.CustomEvent must
+        // dispatch to TouchAsync (advances lastActivityUtc only) NOT
+        // ExtendAsync (which would also bump pageviewCount). Clarification §1.
+        var visitor = Guid.NewGuid();
+        var sessionKey = Guid.NewGuid();
+        var repo = new FakeRepository();
+        var (resolver, cache) = NewResolver(repo);
+
+        cache.Set(visitor, DeviceKeyHasher.Compute("UA"),
+            new AnalyticsSessionCacheEntry(sessionKey, T0, T0, 1));
+
+        var result = await resolver.ResolveAsync(
+            visitor, "UA", T0.AddMinutes(5), SessionActivityKind.CustomEvent, TestContext.Current.CancellationToken);
+
+        result.SessionKey.Should().Be(sessionKey);
+        result.Projection.LastActivityUtc.Should().Be(T0.AddMinutes(5));
+        result.Projection.PageviewCount.Should().Be(1, "custom-event flow must NOT increment pageviewCount");
+        repo.TouchCalls.Should().Be(1);
+        repo.LastTouchSessionKey.Should().Be(sessionKey);
+        repo.LastTouchLastActivityUtc.Should().Be(T0.AddMinutes(5));
+        repo.ExtendCalls.Should().Be(0);
+        repo.InsertCalls.Should().Be(0);
+    }
+
+    [Fact]
     public async Task Cache_hit_fresh_extends_via_repo()
     {
         var visitor = Guid.NewGuid();

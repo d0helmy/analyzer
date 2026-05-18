@@ -101,4 +101,32 @@ public static class Constants
         /// </summary>
         public const string CustomEventCapture = "custom-event-capture";
     }
+
+    /// <summary>
+    /// Slice 004 — Umbraco management-API integration constants for
+    /// Analyzer's first backoffice endpoint (and slice 005+ surfaces).
+    /// Mirrors Customizer's <c>Customizer.Constants.ApiName</c> +
+    /// composition pattern.
+    /// </summary>
+    public static class ManagementApi
+    {
+        /// <summary>
+        /// API name used by <see cref="Umbraco.Cms.Api.Common.Attributes.MapToApiAttribute"/>
+        /// and the Swagger document group. Resolves the
+        /// <c>[BackOfficeRoute("analyzer/api/v{version:apiVersion}")]</c>
+        /// prefix to <c>/umbraco/management/api/v1/analyzer/...</c>.
+        /// </summary>
+        public const string ApiName = "analyzer";
+    }
+}
+
+/// <summary>
+/// Slice 004 — shorthand wrapper around
+/// <see cref="Analyzer.Constants.ManagementApi.ApiName"/>. Top-level so
+/// controller attribute arguments stay compact:
+/// <c>[MapToApi(AnalyzerApiConstants.ApiName)]</c>.
+/// </summary>
+internal static class AnalyzerApiConstants
+{
+    public const string ApiName = Analyzer.Constants.ManagementApi.ApiName;
 }

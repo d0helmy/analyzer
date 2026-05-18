@@ -13,10 +13,21 @@ internal sealed class AnalyticsEventStateStore
 {
     private AnalyticsEventReceipt? _currentReceipt;
     private AnalyticsSession? _currentSession;
+    private readonly List<AnalyticsCustomEvent> _currentCustomEvents = new();
 
     public AnalyticsEventReceipt? CurrentRequestReceipt => _currentReceipt;
 
     public AnalyticsSession? CurrentSession => _currentSession;
+
+    /// <summary>
+    /// Slice 004 — read-only view over the custom events captured in
+    /// the current request scope. Never null; empty list when no
+    /// <c>analyzer.send(...)</c> call has been processed for this
+    /// request. Grows in append order as the handler invokes
+    /// <see cref="AppendCustomEvent"/>.
+    /// </summary>
+    public IReadOnlyList<AnalyticsCustomEvent> CurrentRequestCustomEvents =>
+        _currentCustomEvents.AsReadOnly();
 
     public void SetCurrentReceipt(AnalyticsEventReceipt receipt)
     {
@@ -28,5 +39,18 @@ internal sealed class AnalyticsEventStateStore
     {
         ArgumentNullException.ThrowIfNull(session);
         _currentSession = session;
+    }
+
+    /// <summary>
+    /// Slice 004 — record one custom event captured in this request
+    /// scope. Called by <c>CustomEventCaptureHandler</c> after the
+    /// row is persisted. Concurrency: scoped per request; the
+    /// controller runs on a single thread, so multi-thread append
+    /// inside one scope is not a real slice-004 scenario.
+    /// </summary>
+    public void AppendCustomEvent(AnalyticsCustomEvent customEvent)
+    {
+        ArgumentNullException.ThrowIfNull(customEvent);
+        _currentCustomEvents.Add(customEvent);
     }
 }

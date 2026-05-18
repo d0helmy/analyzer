@@ -55,4 +55,20 @@ public interface IAnalyticsEventStateProvider
     /// populated on in-request consumer flows at later slices.
     /// </summary>
     AnalyticsSession? CurrentSession { get; }
+
+    /// <summary>
+    /// Slice 004 — the custom events captured in the current request
+    /// scope. Empty list when none captured (never null). The list
+    /// grows as the page script makes multiple <c>analyzer.send(...)</c>
+    /// calls during the same request lifecycle.
+    /// </summary>
+    /// <remarks>
+    /// Slice 004 is the first slice where this state-provider is
+    /// reliably populated for in-request consumers — the management
+    /// endpoint that captures custom events runs synchronously on the
+    /// request thread (vs slice-002's fire-and-forget pageview
+    /// dispatch where the state-provider is typically null per the
+    /// slice-002/003 caveats).
+    /// </remarks>
+    IReadOnlyList<AnalyticsCustomEvent> CurrentRequestCustomEvents { get; }
 }

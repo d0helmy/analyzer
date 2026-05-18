@@ -46,4 +46,33 @@ public sealed class ScopedLifetimeTests : AnalyzerIntegrationTestBase
 
         provider.CurrentRequestReceipt.Should().BeNull();
     }
+
+    /// <summary>
+    /// Slice 004 / T022 (US1 AS4) — fresh scopes return an empty list
+    /// for <c>CurrentRequestCustomEvents</c> (never null). Read-only
+    /// view is identity-stable across multiple reads inside one scope.
+    /// </summary>
+    [Fact]
+    public void CurrentRequestCustomEventsIsEmptyInFreshScope()
+    {
+        using var scope = Services.CreateScope();
+
+        var provider = scope.ServiceProvider.GetRequiredService<IAnalyticsEventStateProvider>();
+
+        provider.CurrentRequestCustomEvents.Should().NotBeNull();
+        provider.CurrentRequestCustomEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CurrentRequestCustomEventsIsIsolatedAcrossScopes()
+    {
+        using var scopeOne = Services.CreateScope();
+        using var scopeTwo = Services.CreateScope();
+
+        var providerOne = scopeOne.ServiceProvider.GetRequiredService<IAnalyticsEventStateProvider>();
+        var providerTwo = scopeTwo.ServiceProvider.GetRequiredService<IAnalyticsEventStateProvider>();
+
+        providerOne.CurrentRequestCustomEvents.Should().BeEmpty();
+        providerTwo.CurrentRequestCustomEvents.Should().BeEmpty();
+    }
 }

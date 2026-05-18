@@ -1,11 +1,13 @@
-// Vitest unit test for the empty-but-detectable bundle (spec FR-006
-// + US3 AS2). Loading `./index` must populate
-// `globalThis.Analyzer = { version }`.
+// Vitest unit test for the bundle namespace (FR-006 / US3 AS2 +
+// slice 004 send() exposure). Loading `./index` must populate both
+// `globalThis.Analyzer` (slice-001 token) and `globalThis.analyzer`
+// (slice-004 lower-cased alias carrying `send`).
 
 import { describe, it, expect, beforeAll } from "vitest";
 
 interface AnalyzerNamespace {
   version: string;
+  send: (...args: unknown[]) => unknown;
 }
 
 declare global {
@@ -15,7 +17,7 @@ declare global {
 
 (globalThis as Record<string, unknown>).__ANALYZER_VERSION__ = "0.1.0-test";
 
-describe("Analyzer namespace token (FR-006 / US3 AS2)", () => {
+describe("Analyzer namespace (FR-006 + slice 004 send)", () => {
   beforeAll(async () => {
     await import("./index");
   });
@@ -31,8 +33,11 @@ describe("Analyzer namespace token (FR-006 / US3 AS2)", () => {
     expect(ns.version.length).toBeGreaterThan(0);
   });
 
-  it("exposes no callable API at slice 001 (analyzer.send is deferred to slice 004)", () => {
-    const ns = (globalThis as unknown as { Analyzer: AnalyzerNamespace & { send?: unknown } }).Analyzer;
-    expect("send" in ns).toBe(false);
+  it("exposes window.analyzer.send (slice 004 callable API)", () => {
+    const upper = (globalThis as unknown as { Analyzer: AnalyzerNamespace }).Analyzer;
+    const lower = (globalThis as unknown as { analyzer: AnalyzerNamespace }).analyzer;
+    expect(typeof upper.send).toBe("function");
+    expect(typeof lower.send).toBe("function");
+    expect(lower).toBe(upper);
   });
 });
