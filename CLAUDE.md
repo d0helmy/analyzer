@@ -195,8 +195,11 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-No slice currently in flight. Last shipped: slice 002 (pageview
-subscription + `IAnalyticsEventStateProvider`) — see
-[`specs/002-pageview-subscription/`](specs/002-pageview-subscription/)
-for the artifacts.
+Slice 003 — sessions: spec + plan + research + data-model + contracts +
+quickstart drafted on branch `003-session-tracking`. See
+[`specs/003-session-tracking/plan.md`](specs/003-session-tracking/plan.md)
+for the implementation plan; all 10 Constitution Check gates PASS.
+Next: `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement`.
+Last shipped: slice 002 (pageview subscription +
+`IAnalyticsEventStateProvider`).
 <!-- SPECKIT END -->
