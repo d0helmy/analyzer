@@ -3,7 +3,7 @@
 ## Analytics Module — Intranet Deployment
 
 **Product:** Umbraco Engage (add-on for Umbraco CMS)
-**Deployment context:** Corporate intranet, users authenticated by Azure Entra ID and identified by UPN
+**Deployment context:** US-based corporate intranet, users authenticated by Azure Entra ID and identified by UPN
 **Module in scope:** Analytics (standalone — no other Engage modules in scope)
 
 | | |
@@ -21,9 +21,9 @@
 
 ### 1.1 Purpose
 
-This document specifies the functional, non-functional and integration requirements for the **Analytics module of Umbraco Engage** as deployed on a corporate intranet. The deployment under scope is an internal portal where every visitor is a pre-authenticated employee whose identity is established by Azure Entra ID and represented by their User Principal Name (UPN).
+This document specifies the functional, non-functional and integration requirements for the **Analytics module of Umbraco Engage** as deployed on a US-based corporate intranet. The deployment under scope is an internal portal where every visitor is a pre-authenticated employee whose identity is established by Azure Entra ID and represented by their User Principal Name (UPN).
 
-The specification is intended for product owners, internal communications stakeholders, developers, security and data-protection officers, and works council representatives involved in the implementation, governance or operation of intranet analytics on Umbraco Engage.
+The specification is intended for product owners, internal communications stakeholders, intranet editors, developers, data analysts and privacy/compliance officers involved in operating intranet analytics on Umbraco Engage.
 
 ### 1.2 Scope
 
@@ -59,7 +59,8 @@ The module must:
 - Umbraco Engage — Extending Analytics — https://docs.umbraco.com/umbraco-engage/developers/analytics/extending-analytics
 - Umbraco Engage — Security and privacy — https://docs.umbraco.com/umbraco-engage/security-and-privacy
 - Microsoft — Entra ID OpenID Connect protocol — https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc
-- EDPB — Guidelines on processing personal data in the context of employment (Article 88 GDPR)
+- California Civil Code §§1798.100 et seq. (CCPA / CPRA) — employee data provisions
+- New York Civil Rights Law §52-c — Notice of electronic monitoring
 
 ---
 
@@ -85,11 +86,11 @@ All events are attached to a visitor; all visitors in this deployment are **iden
 - **Content owners** — see usage per page or per Document Type for the pages they own.
 - **HR / Learning & Development** — track training video completion and policy acknowledgement form submissions.
 - **IT / intranet platform team** — operate the module, manage Document Type configuration, custom events and Traffic Filters.
-- **Data Protection Officer / Works Council representative** — validate that analytics processing remains compliant with employee privacy obligations.
+- **Privacy/Compliance Officer** — validates that analytics processing remains compliant with employee privacy obligations and applicable state-law disclosure requirements (see §5.3).
 
 ### 2.4 Standalone Operation — No Dependencies on Other Engage Modules
 
-This section is the inverse of the dependency section in the Personalization specification. It defines the deliberate isolation of the Analytics module in this deployment.
+The deliberate isolation of the Analytics module mirrors the equivalent section in the Customizer (Personalization) specification and in the Adjuster (A/B Testing) specification.
 
 | Engage module | Required in this deployment? | Notes |
 |---|---|---|
@@ -159,7 +160,7 @@ The Analytics module shall record at least the following dimensions for each pag
 |---|---|
 | **FR-DIM-01** | The Analytics dashboards in the Engage backoffice shall present at minimum: pageviews, unique pageviews, sessions, average session duration, pages per session, and unique visitors, filterable by date range and content node. |
 | **FR-DIM-02** | All metrics shall be available aggregated and broken down by Document Type. |
-| **FR-DIM-03** | Geographic data collection shall be **disabled by default** in this deployment, and shall only be enabled with explicit approval from the Data Protection Officer. |
+| **FR-DIM-03** | Geographic data collection shall be **disabled by default** in this deployment, and shall only be enabled with explicit approval from the organisation's privacy/compliance owner. |
 | **FR-DIM-04** | Campaign tracking shall not be configured, and the system shall not surface campaign reports to standard intranet editors. |
 
 ### 3.4 Forms Tracking
@@ -268,10 +269,10 @@ Beyond raw UPN, additional Entra ID attributes are valuable for intranet analyti
 
 | ID | Requirement |
 |---|---|
-| **FR-ENR-01** | The integration shall be able to enrich the visitor profile with selected Entra ID claims: `department`, `jobTitle`, `officeLocation`, `country`, `companyName`. The exact set shall be confirmed with the Data Protection Officer before activation. |
+| **FR-ENR-01** | The integration shall be able to enrich the visitor profile with selected Entra ID claims: `department`, `jobTitle`, `officeLocation`, `country`, `companyName`. The exact set shall be confirmed with the organisation's privacy/compliance owner before activation. |
 | **FR-ENR-02** | Enrichment claims shall be refreshed on each session start, so changes (e.g. department change) are reflected without delay. |
 | **FR-ENR-03** | The reports inside the Analytics section shall be filterable by enrichment attributes (e.g. "pageviews from the Finance department"), provided the attribute has been activated per FR-ENR-01. |
-| **FR-ENR-04** | No enrichment attribute classed as special category personal data (e.g. health, union membership) shall be loaded into Engage, irrespective of whether such attributes are available in Entra ID. |
+| **FR-ENR-04** | No enrichment attribute classed as sensitive (e.g. health, ethnicity, religion, sexual orientation, union membership, immigration status) shall be loaded into Engage, irrespective of whether such attributes are available in Entra ID. |
 | **FR-ENR-05** | Filters and reports shall enforce a **minimum cohort size** (e.g. n ≥ 10) before showing department- or team-level breakdowns, to prevent de-facto re-identification of individuals in small groups. |
 
 ### 4.4 Cross-device Profile Unification
@@ -301,22 +302,22 @@ Beyond raw UPN, additional Entra ID attributes are valuable for intranet analyti
 | **NFR-PER-02** | The dashboards shall remain responsive at the expected scale of the intranet (target: 10,000 employees, 200,000 pageviews per working day). Concrete performance targets shall be agreed during platform design. |
 | **NFR-PER-03** | The custom visitor-identification extension shall not perform synchronous network calls to Entra ID per request; UPN shall be read from the in-process authentication context only. |
 
-### 5.3 Security and Privacy (Employee Monitoring)
+### 5.3 Security and Data Handling
 
-Intranet analytics is a form of employee monitoring and triggers obligations that go beyond standard public-website analytics. This subsection is intentionally more developed than its counterpart in the Personalization specification.
+Intranet analytics is a form of employee monitoring and triggers obligations that go beyond standard public-website analytics. This deployment targets corporations operating in the United States. The requirements below cover what the codebase must provide and what the deploying organisation must be able to configure. Broader policy items (employee handbook language, HR governance, etc.) are the deploying organisation's responsibility and are not features of Analyzer. This subsection is intentionally more developed than its counterpart in the Customizer (Personalization) specification.
 
 | ID | Requirement |
 |---|---|
 | **NFR-SEC-01** | All analytics data shall be stored in the customer's own Umbraco database, hosted in a tenant under organisational control. No third-party processor shall receive analytics data without a separate data-processing agreement. |
-| **NFR-SEC-02** | Processing of analytics shall be documented in the organisation's Record of Processing Activities (Article 30 GDPR), including the lawful basis (typically the employer's legitimate interest, balanced against employee rights). |
+| **NFR-SEC-02** | Processing of analytics shall be documented in the organisation's internal data-handling records, including the purposes of processing, the categories of data collected, the retention periods applied and the access controls in place. The documentation shall be sufficient to respond to data subject inquiries under applicable state laws (e.g. CCPA/CPRA for California-resident employees). |
 | **NFR-SEC-03** | A transparent **employee privacy notice** shall be published on the intranet, describing what is collected, for what purpose, how long it is retained, and who can access individual-level data. The notice shall be visible to every employee at first logon and accessible at any time thereafter. |
-| **NFR-SEC-04** | Where required by law or collective agreement, the **works council or equivalent employee representation** shall be consulted and shall have approved the analytics processing before activation. |
+| **NFR-SEC-04** | Where required by state law (e.g. New York Civil Rights Law §52-c, Connecticut General Statutes §31-48d, Delaware Code Title 19 §705, or equivalents adopted by other states), the deploying organisation shall publish the required prior written notice of electronic monitoring before activating analytics. Analyzer does not generate or display this notice. |
 | **NFR-SEC-05** | Access to individual-level data (the visitor profile view including UPN) shall be restricted to a named user group, audited, and shall not be granted to line managers as a default. Standard editors shall see aggregated data only. |
 | **NFR-SEC-06** | Retention periods shall be configured explicitly using Engage's retention settings: raw event data ≤ 13 months by default (rationale: enable year-over-year comparison only); aggregated reports may be retained longer. The configured values shall be reviewed annually. |
 | **NFR-SEC-07** | Anonymisation shall be applied automatically once an employee's account in Entra ID is disabled or deprovisioned, on a configurable delay. After anonymisation, historical events shall remain in aggregate counts but shall no longer be linkable to a former employee. |
-| **NFR-SEC-08** | The intranet shall support **data subject access requests**: an authorised administrator shall be able to export, in a structured format, all analytics events linked to a given UPN, and to permanently delete that subject's analytics history on lawful request. |
+| **NFR-SEC-08** | An authorised administrator shall be able to **export**, in a structured format, all analytics events linked to a given UPN, and to **permanently delete** that subject's analytics history on lawful request. These operations support the right-to-know and right-to-delete obligations under CCPA/CPRA for California-resident employees, and equivalent rights in other states as they adopt them. |
 | **NFR-SEC-09** | Analytics shall not be used as the sole basis for individual performance evaluation or disciplinary action. This restriction shall be documented in the privacy notice and in role-based access guidance. |
-| **NFR-SEC-10** | The "right to disconnect" or equivalent expectation in the applicable jurisdiction shall be respected: dashboards shall not surface out-of-hours usage of individual employees in a way that could enable monitoring of working time outside agreed bounds. |
+| **NFR-SEC-10** | Individual-level dashboards shall not surface out-of-hours usage of identifiable employees in a way that could enable surveillance of working time outside an employee's agreed schedule. Aggregate or de-identified out-of-hours patterns remain available. |
 
 ### 5.4 Compatibility and Integration
 
@@ -326,6 +327,7 @@ Intranet analytics is a form of employee monitoring and triggers obligations tha
 | **NFR-CMP-02** | The module shall be compatible with Umbraco Forms (used for internal forms tracking) and shall not require any other Umbraco add-on. |
 | **NFR-CMP-03** | The module shall co-exist with the intranet's authentication middleware (Entra ID OIDC integration on the public-facing site) without interfering with the authentication flow. |
 | **NFR-CMP-04** | Configuration shall be transferable between environments (development, staging, production) using Umbraco Deploy or equivalent, including Document Type segmentation flags, custom event definitions and goal definitions. |
+| **NFR-CMP-05** | If Adjuster (A/B Testing) or Customizer (Personalization) are also deployed, Analytics shall coexist with them without conflict and shall not depend on either. Custom event names used as analytics goals shall follow the same naming convention as the goals defined in the Adjuster specification. |
 
 ### 5.5 Maintainability and Extensibility
 
@@ -353,7 +355,7 @@ Intranet analytics is a form of employee monitoring and triggers obligations tha
 - Internal communications staff can open the Analytics section and answer, without developer help: "Which pages did the Finance department visit most this month?", "Which intranet search queries returned no results?", and "What is the completion rate of the mandatory compliance training video?".
 - Forms tracking is operational on every Umbraco Form on the intranet, with abandonment data visible per form.
 - Custom search events appear in the Events report and are filterable by query.
-- The Data Protection Officer can validate, from the Analytics section and configuration files, that: retention periods are set as agreed, no special-category attributes are loaded into Engage, and individual-level data is accessible only to the authorised user group.
+- The privacy/compliance officer can validate, from the Analytics section and configuration files, that: retention periods are set as agreed, no sensitive attributes are loaded into Engage, and individual-level data is accessible only to the authorised user group.
 - Visitor profile lookups expose UPN only to the authorised user group; standard editors see a pseudonymous display name only.
 - Disabling an employee's Entra ID account triggers anonymisation of their visitor profile after the configured delay.
 - The Personalization, A/B Testing, Profiling and Reporting sections of the Engage backoffice are hidden for non-administrator users.
@@ -362,7 +364,7 @@ Intranet analytics is a form of employee monitoring and triggers obligations tha
 
 - **Personalization, A/B Testing, Profiling and standalone Reporting modules of Umbraco Engage.** These are explicitly excluded from this deployment.
 - Marketing-style campaign and UTM tracking.
-- Geographic tracking (disabled by default; may be enabled later only with DPO approval).
+- Geographic tracking (disabled by default; may be enabled later only with privacy/compliance owner approval).
 - Bot detection as an active capability (the authenticated intranet has no relevant bot traffic).
 - Public-website features such as cookie consent banners.
 - The Entra ID authentication itself — covered by the intranet's authentication specification, not by this document.
@@ -375,6 +377,5 @@ Intranet analytics is a form of employee monitoring and triggers obligations tha
 - The intranet is exclusively accessible behind Entra ID authentication; no anonymous routes exist on the front-end.
 - Entra ID issues the OIDC claims required by §4.1 and §4.3 for every authenticated session.
 - The intranet uses Umbraco Forms for internal forms, where automatic form analytics is required.
-- A works council (or equivalent) consultation has been completed and the agreed scope of monitoring is consistent with this specification.
-- The Data Protection Officer has reviewed and signed off on the proposed retention periods, enrichment attributes and access model.
+- The organisation's privacy/compliance owner has reviewed and signed off on the proposed retention periods, enrichment attributes and access model. Where any employees are California residents, CCPA/CPRA-aligned controls are configured per §5.3. Where employees reside in New York, Connecticut, Delaware or any state with an electronic monitoring notice statute, the deploying organisation has published the required written notice on its own surfaces (employee handbook, onboarding portal, or equivalent). Analyzer does not generate or display this notice.
 - The Engage Analytics tracker script is included on every front-end page template; pages that opt out of tracking do so explicitly via the `umbraco-engage-no-tracking` attribute, not by omission of the script.
