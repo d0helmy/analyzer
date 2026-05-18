@@ -16,11 +16,19 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <!-- Slice 002 / T003 — Testcontainers fallback when the Aspire
+         AppHost isn't running for integration tests (research §7). -->
+    <PackageReference Include="Testcontainers.MsSql" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Analyzer\Analyzer.csproj" />
     <ProjectReference Include="..\..\..\customizer\src\Customizer\Customizer.csproj" />
+    <!-- Slice 002 / T014 — integration tests target the sample host's
+         Program via WebApplicationFactory<Program>. -->
+    <ProjectReference Include="..\..\samples\Analyzer.Host\Analyzer.Host.csproj" />
   </ItemGroup>
 
 </Project>

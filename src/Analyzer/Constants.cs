@@ -52,4 +52,20 @@ public static class Constants
         /// <summary>OIDC preferred-username claim — alternative source for UPN.</summary>
         public const string PreferredUsername = "preferred_username";
     }
+
+    /// <summary>
+    /// Database object names owned by Analyzer. Slice 002 introduces
+    /// the first Analyzer-owned table; future slices append their own
+    /// constants here.
+    /// </summary>
+    public static class Database
+    {
+        /// <summary>
+        /// Table holding one row per <c>PageviewCaptured</c> notification
+        /// successfully processed by Analyzer's subscriber. Soft FK to
+        /// <c>customizerPageview(key)</c>, hard FK to
+        /// <c>customizerVisitorProfile(key)</c>.
+        /// </summary>
+        public const string AnalyzerEventReceipt = "analyzerEventReceipt";
+    }
 }

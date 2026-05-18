@@ -1,32 +1,64 @@
-# .NET
-bin/
-obj/
+# ---------------------------------------------------------------------------
+# .NET build output
+# ---------------------------------------------------------------------------
+**/bin/
+**/obj/
 *.user
+*.userosscache
 *.suo
 *.userprefs
-TestResults/
-.vs/
+*.lutconfig
+*.sln.docstates
+artifacts/
+packages/
+project.lock.json
 
+# ---------------------------------------------------------------------------
+# NuGet
+# ---------------------------------------------------------------------------
+*.nupkg
+*.snupkg
+.nuget/
+nuget.exe
+
+# ---------------------------------------------------------------------------
+# Test + coverage
+# ---------------------------------------------------------------------------
+[Tt]est[Rr]esult*/
+coverage/
+*.coverage
+*.coveragexml
+
+# ---------------------------------------------------------------------------
+# Razor Class Library outputs (regenerated from src/Analyzer/Client/)
+# ---------------------------------------------------------------------------
+**/Generated/
+**/wwwroot/App_Plugins/Analyzer/
+
+# Generated OpenAPI client (regenerate via `npm run generate-client` or `generate-client-from-spec`)
+src/Analyzer/Client/src/api/
+# hey-api scratch error logs (written on regen failure)
+src/Analyzer/Client/openapi-ts-error-*.log
+
+# ---------------------------------------------------------------------------
 # Node / Vite
-node_modules/
-dist/
+# ---------------------------------------------------------------------------
+**/node_modules/
+**/dist/
+**/.cache/
+*.tsbuildinfo
+.eslintcache
+.npm/
+.pnpm-store/
 
-# Built backoffice bundle — rebuilt by Vite on every `dotnet build`
-src/Analyzer/wwwroot/App_Plugins/Analyzer/
+# ---------------------------------------------------------------------------
+# .NET Aspire
+# ---------------------------------------------------------------------------
+.aspire/
 
-# OS / editor
-.DS_Store
-Thumbs.db
-*.tmp
-*.swp
-.vscode/
-.idea/
-
-# Local env
-*.env
-.env.*
-
-# Umbraco host runtime data — generated on first boot, never committed
+# ---------------------------------------------------------------------------
+# Umbraco runtime (samples/Analyzer.Host writes these on boot)
+# ---------------------------------------------------------------------------
 samples/*/umbraco/Logs/
 samples/*/umbraco/Data/
 samples/*/umbraco/mediafs/
@@ -34,3 +66,51 @@ samples/*/umbraco/TEMP/
 samples/*/umbraco/models/
 samples/*/umbraco/UI/
 samples/*/App_Data/
+samples/*/wwwroot/media/
+
+# Umbraco's MSBuild targets drop these schema files next to consuming
+# projects' appsettings.json. They're tracked in samples/Analyzer.Host
+# but not in src/Analyzer.Tests (a test project doesn't need them).
+src/Analyzer.Tests/appsettings-schema.json
+src/Analyzer.Tests/appsettings-schema.Umbraco.Cms.json
+src/Analyzer.Tests/umbraco-package-schema.json
+
+# ---------------------------------------------------------------------------
+# IDE / editor
+# ---------------------------------------------------------------------------
+.vs/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# ---------------------------------------------------------------------------
+# OS noise
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ---------------------------------------------------------------------------
+# Local secrets / env
+# Note: samples/Analyzer.Host/appsettings.Development.json IS tracked on
+# purpose — it carries the intentional intranet dev admin credentials so
+# the Aspire AppHost can run an unattended Umbraco install.
+# ---------------------------------------------------------------------------
+*.pfx
+*.key
+*.pem
+.env
+.env.*
+!.env.example
+secrets.json
+
+# ---------------------------------------------------------------------------
+# Local runtime state of installed tooling
+# ---------------------------------------------------------------------------
+.claude/settings.local.json
+.claude/cache/
+.claude/scheduled_tasks.lock
+.remember/
+.superpowers/
