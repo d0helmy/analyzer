@@ -195,7 +195,8 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan:
-[`specs/002-pageview-subscription/plan.md`](specs/002-pageview-subscription/plan.md)
+No slice currently in flight. Last shipped: slice 002 (pageview
+subscription + `IAnalyticsEventStateProvider`) — see
+[`specs/002-pageview-subscription/`](specs/002-pageview-subscription/)
+for the artifacts.
 <!-- SPECKIT END -->
