@@ -104,6 +104,6 @@ Customizer's `IPersonalizationProfile.IdentityRef` is the canonical `oid:<guid>`
 
 ## Outstanding items
 
-None. The plan and spec are fully resolved at this phase.
+**One outstanding item, deferred to implementation (T002):** the exact NuGet version string for the Customizer publish that contains the `PageviewCaptured` notification (slice-011, commit `05e989c`). The version is known by reference to that commit but not yet pinned as a NuGet version string in `Directory.Packages.props`. T002 resolves the lookup.
 
-A small follow-up will land at the implementation step: the exact NuGet version string for Customizer slice-011 (R5) must be looked up at implementation time — at the moment of this writing, that publish artifact's version-number-as-published is known by reference to commit `05e989c` but not yet pinned as a NuGet version string in `Directory.Packages.props`.
+Aside from that single lookup, the plan and spec are fully resolved at this phase.

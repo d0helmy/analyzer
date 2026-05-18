@@ -94,11 +94,11 @@ When the operator opens the Umbraco backoffice after installing Analyzer, the ho
 ### Measurable Outcomes
 
 - **SC-001**: An operator can install Analyzer + Customizer into a fresh Umbraco 17.x host and reach a clean boot in a single try (no rollback, no errors in the application log attributable to Analyzer).
-- **SC-002**: An automated build of the package artifact completes from a clean checkout within standard CI build-time expectations for an Umbraco RCL (no manual steps, no out-of-band installers).
-- **SC-003**: For any authenticated EntraID request reaching the rendering pipeline, the identity seam returns a canonical visitor key in 100% of test cases that match the documented `oid`/`upn` claim shapes — and returns "no identity" in 100% of unauthenticated test cases.
+- **SC-002**: An automated build of the package artifact completes from a clean checkout in **≤ 5 minutes on standard CI hardware** (covers `dotnet restore` + `dotnet build Analyzer.slnx` + `npm install` + `npm run build` in `src/Analyzer/Client/`), with no manual steps and no out-of-band installers.
+- **SC-003**: For any request reaching the rendering pipeline, the identity seam behaves correctly in 100% of test cases covering every documented identity shape in [`contracts/IVisitorIdentifier.md`](contracts/IVisitorIdentifier.md) — returning a canonical visitor key for the four authenticated shapes (oid+upn, upn-only, oid-only, anonymized) and "no identity" for unauthenticated requests.
 - **SC-004**: The backoffice bundle loads with HTTP 200 and zero JavaScript console errors when the operator opens the backoffice for the first time after installation.
 - **SC-005**: An author opening slice 002 has zero remaining setup work to wire DI, register a composer, or define an identity seam — slice 002's work begins at "subscribe to pageviews and persist events" with no skeleton churn.
-- **SC-006**: Slice 001 ships with passing unit tests covering all three `IVisitorIdentifier` resolution branches (oid-present, upn-fallback with warning log, unauthenticated → no-identity), plus integration tests against a test Umbraco host that execute User Story 1, 2, and 3 acceptance scenarios end-to-end. Test stack mirrors Customizer's reference pattern (xUnit v3 + FluentAssertions + SQLite-seam where storage is exercised, in-memory `IServiceCollection` otherwise).
+- **SC-006**: Slice 001 ships with passing unit tests covering all five `IVisitorIdentifier` resolution branches per [`contracts/IVisitorIdentifier.md`](contracts/IVisitorIdentifier.md) (oid+upn, upn-only with warning log, oid-only, unauthenticated → no-identity, anonymized), plus integration tests against a test Umbraco host that execute User Story 1, 2, and 3 acceptance scenarios end-to-end. Test stack mirrors Customizer's reference pattern (xUnit v3 + FluentAssertions + SQLite-seam where storage is exercised, in-memory `IServiceCollection` otherwise).
 
 ## Assumptions
 
