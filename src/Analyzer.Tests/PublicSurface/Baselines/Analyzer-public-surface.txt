@@ -1,0 +1,28 @@
+TYPE Analyzer.Analytics.AnalyticsEventReceipt : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsEventReceipt, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR(System.Guid Id, System.Guid PageviewKey, System.Guid VisitorProfileKey, System.DateTimeOffset ReceivedUtc)
+  PROP System.Guid Id { get; set; }
+  PROP System.Guid PageviewKey { get; set; }
+  PROP System.DateTimeOffset ReceivedUtc { get; set; }
+  PROP System.Guid VisitorProfileKey { get; set; }
+  METHOD Analyzer.Analytics.AnalyticsEventReceipt <Clone>$()
+  METHOD System.Void Deconstruct(System.Guid& Id, System.Guid& PageviewKey, System.Guid& VisitorProfileKey, System.DateTimeOffset& ReceivedUtc)
+  METHOD virtual System.Boolean Equals(Analyzer.Analytics.AnalyticsEventReceipt other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()
+TYPE Analyzer.Analytics.IAnalyticsEventStateProvider : interface : <>
+  PROP Analyzer.Analytics.AnalyticsEventReceipt CurrentRequestReceipt { get; }
+TYPE Analyzer.Features.Visitors.Application.Contracts.IVisitorIdentifier : interface : <>
+  METHOD abstract Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity GetCurrent()
+TYPE Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity : struct : interfaces=[System.IEquatable`1[[Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR(System.Boolean IsAvailable, System.Guid Key, System.String Oid, System.String Upn, System.Boolean IsAnonymized)
+  PROP System.Boolean IsAnonymized { get; set; }
+  PROP System.Boolean IsAvailable { get; set; }
+  PROP System.Guid Key { get; set; }
+  PROP System.String Oid { get; set; }
+  PROP System.String Upn { get; set; }
+  METHOD System.Void Deconstruct(System.Boolean& IsAvailable, System.Guid& Key, System.String& Oid, System.String& Upn, System.Boolean& IsAnonymized)
+  METHOD virtual System.Boolean Equals(Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()

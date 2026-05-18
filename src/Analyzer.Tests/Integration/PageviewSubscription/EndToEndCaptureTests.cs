@@ -46,9 +46,10 @@ public sealed class EndToEndCaptureTests : AnalyzerIntegrationTestBase
         var visitorB = Guid.NewGuid();
         var aggregator = Services.GetRequiredService<IEventAggregator>();
 
-        await aggregator.PublishAsync(new PageviewCaptured(NewPageview(Guid.NewGuid(), visitorA)));
-        await aggregator.PublishAsync(new PageviewCaptured(NewPageview(Guid.NewGuid(), visitorA)));
-        await aggregator.PublishAsync(new PageviewCaptured(NewPageview(Guid.NewGuid(), visitorB)));
+        var ct = TestContext.Current.CancellationToken;
+        await aggregator.PublishAsync(new PageviewCaptured(NewPageview(Guid.NewGuid(), visitorA)), ct);
+        await aggregator.PublishAsync(new PageviewCaptured(NewPageview(Guid.NewGuid(), visitorA)), ct);
+        await aggregator.PublishAsync(new PageviewCaptured(NewPageview(Guid.NewGuid(), visitorB)), ct);
 
         await WaitForVisitorCountAsync(visitorA, expected: 2, deadlineMs: 2_000);
         await WaitForVisitorCountAsync(visitorB, expected: 1, deadlineMs: 2_000);
