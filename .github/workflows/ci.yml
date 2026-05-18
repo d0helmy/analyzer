@@ -97,8 +97,15 @@ jobs:
         # xUnit v3 ships its MTP runner inside the test executable; run
         # the test project directly rather than via `dotnet test` (same
         # workaround Customizer uses).
+        #
+        # Slice-002 Integration + Perf tests need Docker (Testcontainers
+        # MSSQL) or an Aspire-supplied SQL Server connection string —
+        # neither is available on the default Linux runner. Exclude them
+        # here; they're run manually via the quickstart or by a future
+        # dedicated workflow with Docker enabled. `-trait-` is the
+        # xUnit v3 native CLI's exclude-trait flag.
         working-directory: analyzer
-        run: dotnet run --project src/Analyzer.Tests/Analyzer.Tests.csproj --no-build --configuration Release
+        run: dotnet run --project src/Analyzer.Tests/Analyzer.Tests.csproj --no-build --configuration Release -- -trait- "Category=Integration" -trait- "Category=Perf"
 
       - name: Run client tests (Vitest)
         working-directory: analyzer/src/Analyzer/Client
