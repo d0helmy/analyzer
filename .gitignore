@@ -25,3 +25,12 @@ Thumbs.db
 # Local env
 *.env
 .env.*
+
+# Umbraco host runtime data — generated on first boot, never committed
+samples/*/umbraco/Logs/
+samples/*/umbraco/Data/
+samples/*/umbraco/mediafs/
+samples/*/umbraco/TEMP/
+samples/*/umbraco/models/
+samples/*/umbraco/UI/
+samples/*/App_Data/
