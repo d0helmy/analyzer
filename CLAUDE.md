@@ -196,17 +196,12 @@ Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
 Slice 003 — sessions: spec + plan + tasks (54 across 6 phases) on
-branch `003-session-tracking`. `/speckit-analyze` surfaced 1
-**CRITICAL** finding (C1) — `deviceKey` source unreachable in
-fire-and-forget handler timing. **Path A resolution**: paired
-Customizer-side change adding `Pageview.UserAgent`; TODO at
-[`specs/003-session-tracking/customizer-prereq.md`](specs/003-session-tracking/customizer-prereq.md).
-Inter-product contract §6 item 2 is the new prereq. Analyzer slice 003
-implementation CANNOT merge before Customizer's prereq lands.
-A1–A7 medium/low fixes applied to spec / research / plan / tasks /
-contracts. Next: hand off Customizer TODO; then `/speckit-implement`
-(unit tests against synthetic UA stub work in parallel; integration
-tests blocked).
+branch `003-session-tracking`. `/speckit-analyze` C1 finding
+(deviceKey UA unreachable in fire-and-forget handler timing) resolved
+via **Path A** — Customizer-side `Pageview.UserAgent` shipped at
+Customizer `5273c38` on `main`. Inter-product contract §6 item 2 is
+the documented prereq. A1–A7 medium/low fixes applied. Next:
+`/speckit-implement` (T001–T054).
 Last shipped: slice 002 (pageview subscription +
 `IAnalyticsEventStateProvider`).
 <!-- SPECKIT END -->
