@@ -1,19 +1,31 @@
-// Analyzer backoffice client bundle — slice 001 (FR-006).
+// Analyzer backoffice client bundle.
 //
-// Intentionally minimal per spec Clarification Q4: registers no
-// backoffice UI elements, exposes no callable client API. The bundle
-// exists so the host's `umbraco-package.json` channel is wired up
-// (User Story 3) and exports a single detectable namespace token so
-// the bundle's presence is verifiable from a runtime inspector.
-//
-// The callable client API (`analyzer.send(...)`) and content-app
-// elements ship in later slices (custom events at slice 004; per-
-// content-node Analytics content app at slice 005).
+// Slice 001 (FR-006) shipped a minimal detectable namespace token.
+// Slice 004 adds `window.analyzer.send("event", ...)` — the first
+// callable client API, used by Razor pages to push custom engagement
+// events to the management endpoint (US1).
+
+import { send, type CustomEventResponse, type CustomEventError } from "./analytics/send";
 
 declare const __ANALYZER_VERSION__: string;
 
-// Vite's `define` config replaces __ANALYZER_VERSION__ with the
-// quoted version string from package.json at build time.
-(globalThis as Record<string, unknown>).Analyzer = {
+export type { CustomEventResponse, CustomEventError };
+export { send };
+
+interface AnalyzerNamespace {
+  version: string;
+  send: typeof send;
+}
+
+const globalAny = globalThis as Record<string, unknown>;
+const existing = globalAny.Analyzer as Partial<AnalyzerNamespace> | undefined;
+
+const namespace: AnalyzerNamespace = {
+  ...(existing ?? {}),
   version: __ANALYZER_VERSION__,
+  send,
 };
+
+globalAny.Analyzer = namespace;
+// Lowercase alias — spec naming convention `window.analyzer.send(...)`.
+globalAny.analyzer = namespace;

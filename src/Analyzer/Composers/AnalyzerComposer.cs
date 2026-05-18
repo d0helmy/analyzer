@@ -1,4 +1,6 @@
 using Analyzer.Analytics;
+using Analyzer.Features.CustomEvents.Application;
+using Analyzer.Features.CustomEvents.Infrastructure.Persistence;
 using Analyzer.Features.Events.Application;
 using Analyzer.Features.Events.Application.Anonymization;
 using Analyzer.Features.Events.Infrastructure.Dispatcher;
@@ -123,6 +125,20 @@ public sealed class AnalyzerComposer : IComposer
         // Slice-003 US3 — background sweeper closes inactive sessions
         // on a configurable cadence. Singleton hosted service.
         services.AddHostedService<AnalyzerSessionSweeperService>();
+
+        // Slice-004 — custom-events capture path. Repository is scoped
+        // (matches slice-002/003 repo lifetime); auditor is scoped so
+        // each captured event emits its own log entry; handler is
+        // scoped (depends on the scoped state-store + repository).
+        services.AddScoped<IAnalyzerCustomEventRepository, AnalyzerCustomEventRepository>();
+        services.AddScoped<ICustomEventAuditor, CustomEventAuditor>();
+        services.AddScoped<ICustomEventCaptureHandler, CustomEventCaptureHandler>();
+
+        // Slice-004 US2 — third IAnonymizationCascadeStep registration
+        // (alongside slice-002's receipt cascade + slice-003's session
+        // cascade). Hard-deletes the visitor's analyzerCustomEvent rows
+        // inside Customizer's outer NPoco scope.
+        services.AddScoped<IAnonymizationCascadeStep, Features.CustomEvents.Application.Anonymization.AnalyzerCustomEventCascadeStep>();
     }
 
     internal static bool IsCustomizerRegistered(IServiceCollection services)
