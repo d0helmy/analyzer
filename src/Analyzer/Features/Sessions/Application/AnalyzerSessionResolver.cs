@@ -39,6 +39,7 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
         Guid visitorProfileKey,
         string? userAgent,
         DateTimeOffset receivedUtc,
+        SessionActivityKind activityKind,
         CancellationToken ct)
     {
         var deviceKey = DeviceKeyHasher.Compute(userAgent);
@@ -50,9 +51,9 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
         {
             if (cached.LastActivityUtc + inactivity >= receivedUtc)
             {
-                // Fresh cache hit → extend in DB, project client-side.
-                return await ExtendAndReturn(
-                    visitorProfileKey, deviceKey, cached, receivedUtc, ct)
+                // Fresh cache hit → advance activity, project client-side.
+                return await AdvanceAndReturn(
+                    visitorProfileKey, deviceKey, cached, receivedUtc, activityKind, ct)
                     .ConfigureAwait(false);
             }
 
@@ -71,14 +72,14 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
 
         if (dbRow is not null && dbRow.LastActivityUtc + inactivity >= receivedUtc)
         {
-            // DB hit + fresh → extend, cache, return.
+            // DB hit + fresh → advance activity, cache, return.
             var entry = new AnalyticsSessionCacheEntry(
                 SessionKey: dbRow.SessionKey,
                 StartUtc: dbRow.StartUtc,
                 LastActivityUtc: dbRow.LastActivityUtc,
                 PageviewCount: dbRow.PageviewCount);
-            return await ExtendAndReturn(
-                visitorProfileKey, deviceKey, entry, receivedUtc, ct)
+            return await AdvanceAndReturn(
+                visitorProfileKey, deviceKey, entry, receivedUtc, activityKind, ct)
                 .ConfigureAwait(false);
         }
 
@@ -91,18 +92,48 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
                 ct).ConfigureAwait(false);
         }
 
-        // 3) Open a new session.
+        // 3) Open a new session. activityKind only matters for the
+        //    collision-retry path (concurrent open winner needs the
+        //    right Extend/Touch dispatch on its own row).
         return await OpenNewAsync(
-            visitorProfileKey, deviceKey, receivedUtc, ct).ConfigureAwait(false);
+            visitorProfileKey, deviceKey, receivedUtc, activityKind, ct).ConfigureAwait(false);
     }
 
-    private async ValueTask<SessionResolutionResult> ExtendAndReturn(
+    private async ValueTask<SessionResolutionResult> AdvanceAndReturn(
         Guid visitorProfileKey,
         string deviceKey,
         AnalyticsSessionCacheEntry entry,
         DateTimeOffset receivedUtc,
+        SessionActivityKind activityKind,
         CancellationToken ct)
     {
+        if (activityKind == SessionActivityKind.CustomEvent)
+        {
+            // Custom-event flow: advance lastActivityUtc only; do NOT
+            // increment pageviewCount (Clarification §1). The repository's
+            // TouchAsync UPDATE is idempotent on already-closed rows;
+            // if the sweeper closed the row between cache-read and
+            // touch, the row stays closed and we fall through to open
+            // a fresh session.
+            await _repository.TouchAsync(
+                entry.SessionKey, receivedUtc, ct).ConfigureAwait(false);
+
+            var touchedEntry = entry with { LastActivityUtc = receivedUtc };
+            _cache.Set(visitorProfileKey, deviceKey, touchedEntry);
+
+            var touchedProjection = new AnalyticsSession(
+                SessionKey: entry.SessionKey,
+                VisitorProfileKey: visitorProfileKey,
+                StartUtc: entry.StartUtc,
+                LastActivityUtc: receivedUtc,
+                EndUtc: null,
+                PageviewCount: entry.PageviewCount,
+                IsActive: true);
+
+            return new SessionResolutionResult(entry.SessionKey, touchedProjection);
+        }
+
+        // Pageview flow — advance lastActivityUtc AND increment pageviewCount.
         SessionExtendResult extended;
         try
         {
@@ -119,7 +150,7 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
                 entry.SessionKey);
             _cache.Invalidate(visitorProfileKey, deviceKey);
             return await OpenNewAsync(
-                visitorProfileKey, deviceKey, receivedUtc, ct).ConfigureAwait(false);
+                visitorProfileKey, deviceKey, receivedUtc, activityKind, ct).ConfigureAwait(false);
         }
 
         // Update cache + build projection from cached StartUtc +
@@ -147,6 +178,7 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
         Guid visitorProfileKey,
         string deviceKey,
         DateTimeOffset receivedUtc,
+        SessionActivityKind activityKind,
         CancellationToken ct)
     {
         var newSessionKey = Guid.NewGuid();
@@ -191,8 +223,8 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
                 StartUtc: winner.StartUtc,
                 LastActivityUtc: winner.LastActivityUtc,
                 PageviewCount: winner.PageviewCount);
-            return await ExtendAndReturn(
-                visitorProfileKey, deviceKey, winnerEntry, receivedUtc, ct)
+            return await AdvanceAndReturn(
+                visitorProfileKey, deviceKey, winnerEntry, receivedUtc, activityKind, ct)
                 .ConfigureAwait(false);
         }
 

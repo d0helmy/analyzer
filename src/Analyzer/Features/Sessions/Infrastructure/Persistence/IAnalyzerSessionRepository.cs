@@ -58,6 +58,19 @@ internal interface IAnalyzerSessionRepository
         CancellationToken ct);
 
     /// <summary>
+    /// Slice 004 — advance <c>lastActivityUtc</c> on the session WITHOUT
+    /// incrementing <c>pageviewCount</c>. Used by the custom-event
+    /// capture path (Clarification §1). 1 indexed UPDATE; idempotent on
+    /// already-closed rows (the <c>WHERE isActive = 1</c> predicate
+    /// makes the touch a no-op when the sweeper has closed the row
+    /// concurrently).
+    /// </summary>
+    Task TouchAsync(
+        Guid sessionKey,
+        DateTimeOffset newLastActivityUtc,
+        CancellationToken ct);
+
+    /// <summary>
     /// Slice 003 US2 — soft-anonymise every active-or-closed session
     /// row for <paramref name="visitorProfileKey"/>. Sets
     /// <c>anonymizedUtc = now</c> + clears <c>deviceKey</c>; preserves

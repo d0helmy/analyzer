@@ -165,6 +165,7 @@ public sealed class AnalyzerSessionSweeperServiceTests
         public Task<SessionExtendResult> ExtendAsync(Guid s, DateTimeOffset n, CancellationToken c) =>
             Task.FromResult(new SessionExtendResult(default, 0));
         public Task CloseAsync(Guid s, DateTimeOffset e, CancellationToken c) => Task.CompletedTask;
+        public Task TouchAsync(Guid s, DateTimeOffset n, CancellationToken c) => Task.CompletedTask;
         public Task<IReadOnlyList<Guid>> SoftAnonymizeByVisitorKeyAsync(
             Guid v, DateTimeOffset n, CancellationToken c) =>
             Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());

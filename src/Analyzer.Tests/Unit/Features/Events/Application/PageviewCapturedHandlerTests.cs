@@ -20,7 +20,7 @@ public sealed class PageviewCapturedHandlerTests
     [Fact]
     public async Task EnqueuesReceiptForValidNotification()
     {
-        var (queue, handler, _) = Build(capacity: 4);
+        var (queue, handler, resolver) = Build(capacity: 4);
         var pageview = NewPageview(Guid.NewGuid(), Guid.NewGuid());
 
         await handler.HandleAsync(
@@ -32,6 +32,11 @@ public sealed class PageviewCapturedHandlerTests
         op.Receipt.VisitorProfileKey.Should().Be(pageview.VisitorProfileKey);
         op.Receipt.ReceivedUtc.Should().Be(FixedNow);
         op.Receipt.Id.Should().NotBe(Guid.Empty);
+
+        // Slice 004 — pageview path must pass SessionActivityKind.Pageview
+        // so the resolver dispatches to ExtendAsync (incrementing
+        // pageviewCount), preserving slice-003 behaviour.
+        resolver.LastActivityKind.Should().Be(SessionActivityKind.Pageview);
     }
 
     [Fact]
@@ -135,16 +140,20 @@ public sealed class PageviewCapturedHandlerTests
         public Guid NextSessionKey { get; set; } = Guid.NewGuid();
         public Exception? ThrowOnNextCall { get; set; }
 
+        public SessionActivityKind LastActivityKind { get; private set; }
+
         public ValueTask<SessionResolutionResult> ResolveAsync(
             Guid visitorProfileKey,
             string? userAgent,
             DateTimeOffset receivedUtc,
+            SessionActivityKind activityKind,
             CancellationToken ct)
         {
             CallCount++;
             LastVisitorKey = visitorProfileKey;
             LastUserAgent = userAgent;
             LastReceivedUtc = receivedUtc;
+            LastActivityKind = activityKind;
 
             if (ThrowOnNextCall is { } ex)
             {

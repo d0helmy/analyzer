@@ -72,7 +72,12 @@ internal sealed class PageviewCapturedHandler : INotificationAsyncHandler<Pagevi
             try
             {
                 resolution = await _sessionResolver
-                    .ResolveAsync(pv.VisitorProfileKey, pv.UserAgent, receivedUtc, cancellationToken)
+                    .ResolveAsync(
+                        pv.VisitorProfileKey,
+                        pv.UserAgent,
+                        receivedUtc,
+                        SessionActivityKind.Pageview,
+                        cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception ex)
