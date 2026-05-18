@@ -116,6 +116,23 @@ internal sealed class AnalyzerSessionRepository : IAnalyzerSessionRepository
         scope.Complete();
     }
 
+    public async Task TouchAsync(
+        Guid sessionKey,
+        DateTimeOffset newLastActivityUtc,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        using var scope = _scopeProvider.CreateScope();
+        await scope.Database.ExecuteAsync(
+            $"UPDATE {Constants.Database.AnalyzerSession} " +
+            $"SET lastActivityUtc = @0 " +
+            $"WHERE sessionKey = @1 AND isActive = 1",
+            newLastActivityUtc,
+            sessionKey).ConfigureAwait(false);
+        scope.Complete();
+    }
+
     public async Task<IReadOnlyList<Guid>> SoftAnonymizeByVisitorKeyAsync(
         Guid visitorProfileKey,
         DateTimeOffset nowUtc,

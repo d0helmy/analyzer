@@ -15,44 +15,78 @@ namespace Analyzer.Features.Sessions.Application;
 /// <c>services.Replace&lt;IAnalyzerSessionResolver, …&gt;(...)</c> —
 /// the behaviour-compatibility contract is documented in
 /// <c>specs/003-session-tracking/contracts/AnalyzerSessionResolver.md</c>.
+/// Slice 004 added an <see cref="SessionActivityKind"/> parameter so the
+/// resolver dispatches to <c>ExtendAsync</c> (pageview; increments
+/// <c>pageviewCount</c>) or <c>TouchAsync</c> (custom event; activity
+/// only) on the cache-/DB-hit path.
 /// </remarks>
 internal interface IAnalyzerSessionResolver
 {
     /// <summary>
-    /// Resolve the session this pageview belongs to. Either extends an
-    /// in-progress active session for the visitor+device, closes a
-    /// stale one and opens a new session, or opens a fresh session if
-    /// none exists.
+    /// Resolve the session this activity belongs to. Either extends or
+    /// touches an in-progress active session for the visitor+device,
+    /// closes a stale one and opens a new session, or opens a fresh
+    /// session if none exists.
     /// </summary>
     /// <param name="visitorProfileKey">
     /// Customizer-resolved visitor key. MUST be non-empty (caller
     /// guarantees; the slice-002 handler short-circuits empty keys).
     /// </param>
     /// <param name="userAgent">
-    /// Raw <c>User-Agent</c> carried on the immutable
-    /// <c>Pageview</c> record by the <c>PageviewCaptured</c>
-    /// notification (cross-product prereq at customizer
-    /// <c>5273c38</c>). NOT read from <c>IHttpContextAccessor</c> —
-    /// that path is unreliable under typical fire-and-forget timing
-    /// (lesson #40 / analysis C1). Null / whitespace tolerated —
+    /// Raw <c>User-Agent</c> carried on the immutable <c>Pageview</c>
+    /// record by the <c>PageviewCaptured</c> notification (cross-product
+    /// prereq at customizer <c>5273c38</c>); for slice 004 custom-event
+    /// flows, read by the controller from the request <c>HttpContext</c>
+    /// (live on the request thread). Null / whitespace tolerated —
     /// hashed to a deterministic sentinel device key.
     /// </param>
     /// <param name="receivedUtc">
-    /// When the handler observed the notification. Set on the new /
+    /// When the caller observed the activity. Set on the new /
     /// extended session row as <c>lastActivityUtc</c> (and as
     /// <c>startUtc</c> on fresh sessions).
     /// </param>
-    /// <param name="ct">Cancellation token from the handler chain.</param>
+    /// <param name="activityKind">
+    /// Slice 004 — selects the activity-advancement semantic on the
+    /// cache-/DB-hit path: <see cref="SessionActivityKind.Pageview"/>
+    /// invokes <c>ExtendAsync</c> (advances <c>lastActivityUtc</c>
+    /// AND increments <c>pageviewCount</c>);
+    /// <see cref="SessionActivityKind.CustomEvent"/> invokes
+    /// <c>TouchAsync</c> (advances <c>lastActivityUtc</c> only). On
+    /// the open-new-session path the value is irrelevant: every fresh
+    /// session row starts with <c>pageviewCount = 1</c>.
+    /// </param>
+    /// <param name="ct">Cancellation token from the caller's chain.</param>
     /// <returns>
     /// <see cref="SessionResolutionResult"/> carrying both the session
-    /// key (handle for the receipt FK) and the in-flight
-    /// <see cref="AnalyticsSession"/> projection (for the state store).
+    /// key and the in-flight <see cref="AnalyticsSession"/> projection
+    /// (for the state store).
     /// </returns>
     ValueTask<SessionResolutionResult> ResolveAsync(
         Guid visitorProfileKey,
         string? userAgent,
         DateTimeOffset receivedUtc,
+        SessionActivityKind activityKind,
         CancellationToken ct);
+}
+
+/// <summary>
+/// Slice 004 — selects the activity-advancement semantic the resolver
+/// applies when the session row already exists.
+/// </summary>
+internal enum SessionActivityKind
+{
+    /// <summary>
+    /// Pageview — advance <c>lastActivityUtc</c> AND increment
+    /// <c>pageviewCount</c> (slice 003 behaviour).
+    /// </summary>
+    Pageview = 0,
+
+    /// <summary>
+    /// Custom event — advance <c>lastActivityUtc</c> only;
+    /// <c>pageviewCount</c> stays unchanged (Clarification §1; the
+    /// Mixpanel/GA "engagement keeps the session alive" pattern).
+    /// </summary>
+    CustomEvent = 1,
 }
 
 /// <summary>

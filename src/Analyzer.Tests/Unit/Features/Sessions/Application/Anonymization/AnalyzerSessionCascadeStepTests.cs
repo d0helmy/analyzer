@@ -122,6 +122,7 @@ public sealed class AnalyzerSessionCascadeStepTests
         public Task<SessionExtendResult> ExtendAsync(Guid s, DateTimeOffset n, CancellationToken c) =>
             Task.FromResult(new SessionExtendResult(default, 0));
         public Task CloseAsync(Guid s, DateTimeOffset e, CancellationToken c) => Task.CompletedTask;
+        public Task TouchAsync(Guid s, DateTimeOffset n, CancellationToken c) => Task.CompletedTask;
         public Task<IReadOnlyList<Guid>> SweepEligibleAsync(
             DateTimeOffset c1, TimeSpan i, int b, CancellationToken c2) =>
             Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());

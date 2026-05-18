@@ -25,8 +25,8 @@ Razor Class Library at `src/Analyzer/`. Test project at `src/Analyzer.Tests/`. C
 
 **Purpose**: Verify slice 003 + 002 + 001 prerequisites are in place.
 
-- [ ] T001 Confirm slice-003 + slice-002 commits are on `main` (`git log --oneline main..HEAD | head -1` shows recent slice-004 commits; `481b425` and earlier are on `main`).
-- [ ] T002 Verify Aspire AppHost + SQL container reachable (`docker info`; `dotnet run --project aspire/Analyzer.AppHost --launch-profile https`; backoffice at `https://localhost:44364/umbraco`).
+- [X] T001 Confirm slice-003 + slice-002 commits are on `main` (`git log --oneline main..HEAD | head -1` shows recent slice-004 commits; `481b425` and earlier are on `main`).
+- [X] T002 Verify Aspire AppHost + SQL container reachable (`docker info`; `dotnet run --project aspire/Analyzer.AppHost --launch-profile https`; backoffice at `https://localhost:44364/umbraco`).
 
 ---
 
@@ -36,17 +36,17 @@ Razor Class Library at `src/Analyzer/`. Test project at `src/Analyzer.Tests/`. C
 
 **⚠️ CRITICAL**: No user-story work can begin until this phase is complete.
 
-- [ ] T003 Add `Database.AnalyzerCustomEvent = "analyzerCustomEvent"` + new nested `AuditLog.CustomEventCapture = "custom-event-capture"` constant in `src/Analyzer/Constants.cs`.
-- [ ] T004 [P] Create public record `Analyzer.Analytics.AnalyticsCustomEvent` (9 positional properties: `EventKey, SessionKey, VisitorProfileKey, ReceiptKey?, Category, Action, Label?, Value?, ReceivedUtc`) with full XML docs per data-model §2 in `src/Analyzer/Analytics/AnalyticsCustomEvent.cs`.
-- [ ] T005 [P] Create `AnalyzerCustomEventDto` NPoco DTO in `src/Analyzer/Features/CustomEvents/Infrastructure/Persistence/AnalyzerCustomEventDto.cs` per data-model §1 (10 columns with `[Column]` / `[Index]` / `[Length]` / `[Decimal(18,4)]` / `[NullSetting]` attributes; composite `(category, action)` index emitted by raw SQL in M0003).
-- [ ] T006 [P] Extend `src/Analyzer/Features/Sessions/Application/IAnalyzerSessionResolver.cs` — add `SessionActivityKind { Pageview, CustomEvent }` enum + `SessionActivityKind activityKind` parameter on `ResolveAsync` per research §3 + data-model §10. Internal interface change.
-- [ ] T007 [US1-prep] Update `src/Analyzer/Features/Sessions/Application/AnalyzerSessionResolver.cs` — dispatch internally to `ExtendAsync` (Pageview) or `TouchAsync` (CustomEvent) based on the new `activityKind` parameter.
-- [ ] T008 Extend `src/Analyzer/Features/Sessions/Infrastructure/Persistence/IAnalyzerSessionRepository.cs` with new `Task TouchAsync(Guid sessionKey, DateTimeOffset newLastActivityUtc, CancellationToken ct)` per data-model §10 + Clarification §1.
-- [ ] T009 Implement `TouchAsync` in `src/Analyzer/Features/Sessions/Infrastructure/Persistence/AnalyzerSessionRepository.cs` per research §4 — 1 indexed UPDATE; `WHERE sessionKey = @0 AND isActive = 1`; idempotent on already-closed rows.
-- [ ] T010 Update slice-003 `src/Analyzer/Features/Events/Application/PageviewCapturedHandler.cs` call site — pass `SessionActivityKind.Pageview` to `resolver.ResolveAsync(...)` (compile-time change; no behavior delta).
-- [ ] T010b **Regression gate** — immediately after T010, run the full unit suite (`dotnet run --project src/Analyzer.Tests/Analyzer.Tests.csproj --no-build --configuration Debug -- -trait- "Category=Integration" -trait- "Category=Perf"`) and confirm the slice-002 + slice-003 corpus (~58 unit tests) still passes. Catches signature-change regressions early instead of at T049. (Analyze finding A4.)
-- [ ] T011 Create migration `src/Analyzer/Migrations/M0003_AddAnalyzerCustomEventTable.cs` (AsyncMigrationBase): `Create.Table<AnalyzerCustomEventDto>().Do()` guarded by `TableExists`; raw-SQL hard FKs (`FK_analyzerCustomEvent_VisitorProfile`, `FK_analyzerCustomEvent_Session`) + composite `(category, action)` index on SQL Server only (SQLite skip via `Database.DatabaseType.GetProviderName()` per lesson #39). Full body per data-model §9.
-- [ ] T012 Chain `M0003` after `M0002` in `src/Analyzer/Migrations/AnalyzerMigrationPlan.cs` — add `.To<M0003_AddAnalyzerCustomEventTable>("0003-AddAnalyzerCustomEventTable")`.
+- [X] T003 Add `Database.AnalyzerCustomEvent = "analyzerCustomEvent"` + new nested `AuditLog.CustomEventCapture = "custom-event-capture"` constant in `src/Analyzer/Constants.cs`.
+- [X] T004 [P] Create public record `Analyzer.Analytics.AnalyticsCustomEvent` (9 positional properties: `EventKey, SessionKey, VisitorProfileKey, ReceiptKey?, Category, Action, Label?, Value?, ReceivedUtc`) with full XML docs per data-model §2 in `src/Analyzer/Analytics/AnalyticsCustomEvent.cs`.
+- [X] T005 [P] Create `AnalyzerCustomEventDto` NPoco DTO in `src/Analyzer/Features/CustomEvents/Infrastructure/Persistence/AnalyzerCustomEventDto.cs` per data-model §1 (10 columns with `[Column]` / `[Index]` / `[Length]` / `[Decimal(18,4)]` / `[NullSetting]` attributes; composite `(category, action)` index emitted by raw SQL in M0003).
+- [X] T006 [P] Extend `src/Analyzer/Features/Sessions/Application/IAnalyzerSessionResolver.cs` — add `SessionActivityKind { Pageview, CustomEvent }` enum + `SessionActivityKind activityKind` parameter on `ResolveAsync` per research §3 + data-model §10. Internal interface change.
+- [X] T007 [US1-prep] Update `src/Analyzer/Features/Sessions/Application/AnalyzerSessionResolver.cs` — dispatch internally to `ExtendAsync` (Pageview) or `TouchAsync` (CustomEvent) based on the new `activityKind` parameter.
+- [X] T008 Extend `src/Analyzer/Features/Sessions/Infrastructure/Persistence/IAnalyzerSessionRepository.cs` with new `Task TouchAsync(Guid sessionKey, DateTimeOffset newLastActivityUtc, CancellationToken ct)` per data-model §10 + Clarification §1.
+- [X] T009 Implement `TouchAsync` in `src/Analyzer/Features/Sessions/Infrastructure/Persistence/AnalyzerSessionRepository.cs` per research §4 — 1 indexed UPDATE; `WHERE sessionKey = @0 AND isActive = 1`; idempotent on already-closed rows.
+- [X] T010 Update slice-003 `src/Analyzer/Features/Events/Application/PageviewCapturedHandler.cs` call site — pass `SessionActivityKind.Pageview` to `resolver.ResolveAsync(...)` (compile-time change; no behavior delta).
+- [X] T010b **Regression gate** — immediately after T010, run the full unit suite (`dotnet run --project src/Analyzer.Tests/Analyzer.Tests.csproj --no-build --configuration Debug -- -trait- "Category=Integration" -trait- "Category=Perf"`) and confirm the slice-002 + slice-003 corpus (~58 unit tests) still passes. Catches signature-change regressions early instead of at T049. (Analyze finding A4.)
+- [X] T011 Create migration `src/Analyzer/Migrations/M0003_AddAnalyzerCustomEventTable.cs` (AsyncMigrationBase): `Create.Table<AnalyzerCustomEventDto>().Do()` guarded by `TableExists`; raw-SQL hard FKs (`FK_analyzerCustomEvent_VisitorProfile`, `FK_analyzerCustomEvent_Session`) + composite `(category, action)` index on SQL Server only (SQLite skip via `Database.DatabaseType.GetProviderName()` per lesson #39). Full body per data-model §9.
+- [X] T012 Chain `M0003` after `M0002` in `src/Analyzer/Migrations/AnalyzerMigrationPlan.cs` — add `.To<M0003_AddAnalyzerCustomEventTable>("0003-AddAnalyzerCustomEventTable")`.
 
 **Checkpoint**: Schema, public record, slice-003 resolver + repo extensions ready. User-story implementation can begin.
 

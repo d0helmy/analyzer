@@ -77,5 +77,28 @@ public static class Constants
         /// enforces "exactly one active session per visitor+device".
         /// </summary>
         public const string AnalyzerSession = "analyzerSession";
+
+        /// <summary>
+        /// Slice 004 — one row per <c>analyzer.send(...)</c> custom-event
+        /// POST successfully processed by the management endpoint. Hard FK
+        /// to <c>analyzerSession.sessionKey</c> (first Analyzer-to-Analyzer
+        /// hard FK) and to <c>customizerVisitorProfile(key)</c>; soft FK on
+        /// <c>receiptKey</c> for rare in-request co-capture.
+        /// </summary>
+        public const string AnalyzerCustomEvent = "analyzerCustomEvent";
+    }
+
+    /// <summary>
+    /// Audit-log action names emitted via <c>ILogger</c> for state-changing
+    /// management surfaces. Slice 004 introduces the first action; later
+    /// slices append.
+    /// </summary>
+    public static class AuditLog
+    {
+        /// <summary>
+        /// Slice 004 — emitted on every successful custom-event capture
+        /// via the management endpoint (FR-008).
+        /// </summary>
+        public const string CustomEventCapture = "custom-event-capture";
     }
 }
