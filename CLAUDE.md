@@ -195,13 +195,11 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-Slice 003 — sessions: spec + plan + tasks (54 across 6 phases) on
-branch `003-session-tracking`. `/speckit-analyze` C1 finding
-(deviceKey UA unreachable in fire-and-forget handler timing) resolved
-via **Path A** — Customizer-side `Pageview.UserAgent` shipped at
-Customizer `5273c38` on `main`. Inter-product contract §6 item 2 is
-the documented prereq. A1–A7 medium/low fixes applied. Next:
-`/speckit-implement` (T001–T054).
-Last shipped: slice 002 (pageview subscription +
-`IAnalyticsEventStateProvider`).
+No slice currently in flight. Last shipped: slice 003 (sessions —
+`analyzerSession` table, session resolver + cache, soft-anonymise
+cascade step, sweeper, `IAnalyticsEventStateProvider.CurrentSession`
++ `AnalyticsSession` public record) — see
+[`specs/003-session-tracking/`](specs/003-session-tracking/) for the
+artifacts. Cross-product Customizer prereq landed at customizer
+`5273c38`; inter-product contract §6 item 2 ratified.
 <!-- SPECKIT END -->
