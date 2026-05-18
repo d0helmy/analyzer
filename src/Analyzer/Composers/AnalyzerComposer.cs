@@ -3,6 +3,9 @@ using Analyzer.Features.Events.Application;
 using Analyzer.Features.Events.Application.Anonymization;
 using Analyzer.Features.Events.Infrastructure.Dispatcher;
 using Analyzer.Features.Events.Infrastructure.Persistence;
+using Analyzer.Features.Sessions.Application;
+using Analyzer.Features.Sessions.Infrastructure.Configuration;
+using Analyzer.Features.Sessions.Infrastructure.Persistence;
 using Analyzer.Features.Visitors.Application;
 using Analyzer.Features.Visitors.Application.Contracts;
 using Customizer.Composers;
@@ -38,6 +41,10 @@ public sealed class AnalyzerComposer : IComposer
     {
         builder.Services.Configure<AnalyzerWriteQueueOptions>(
             builder.Config.GetSection("Analyzer:WriteQueue"));
+
+        // Slice 003 — IOptionsMonitor-reloadable session tunables.
+        builder.Services.Configure<AnalyzerSessionOptions>(
+            builder.Config.GetSection("Analyzer:Session"));
 
         ConfigureServices(builder.Services);
     }
@@ -91,8 +98,19 @@ public sealed class AnalyzerComposer : IComposer
 
         // Slice-002 US3 — scoped state store + public state provider.
         // FR-007: scoped per Clarifications Q3 (request-aligned).
+        // Slice-003 extends the state store + provider with CurrentSession
+        // (additive; same scope; same lifetime).
         services.AddScoped<AnalyticsEventStateStore>();
         services.AddScoped<IAnalyticsEventStateProvider, AnalyticsEventStateProvider>();
+
+        // Slice-003 — session subsystem.
+        // - Cache: singleton (one per host; spans request scopes by definition).
+        // - Repository: scoped (matches slice-002 receipt repo lifetime).
+        // - Resolver: scoped (called synchronously from handler; transitive
+        //   deps compose cleanly under scoped resolution).
+        services.AddSingleton<AnalyzerSessionCacheStore>();
+        services.AddScoped<IAnalyzerSessionRepository, AnalyzerSessionRepository>();
+        services.AddScoped<IAnalyzerSessionResolver, AnalyzerSessionResolver>();
     }
 
     internal static bool IsCustomizerRegistered(IServiceCollection services)

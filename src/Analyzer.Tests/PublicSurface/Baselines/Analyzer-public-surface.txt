@@ -3,6 +3,7 @@ TYPE Analyzer.Analytics.AnalyticsEventReceipt : sealed class : interfaces=[Syste
   PROP System.Guid Id { get; set; }
   PROP System.Guid PageviewKey { get; set; }
   PROP System.DateTimeOffset ReceivedUtc { get; set; }
+  PROP System.Nullable<System.Guid> SessionKey { get; set; }
   PROP System.Guid VisitorProfileKey { get; set; }
   METHOD Analyzer.Analytics.AnalyticsEventReceipt <Clone>$()
   METHOD System.Void Deconstruct(System.Guid& Id, System.Guid& PageviewKey, System.Guid& VisitorProfileKey, System.DateTimeOffset& ReceivedUtc)
@@ -10,8 +11,24 @@ TYPE Analyzer.Analytics.AnalyticsEventReceipt : sealed class : interfaces=[Syste
   METHOD virtual System.Boolean Equals(System.Object obj)
   METHOD virtual System.Int32 GetHashCode()
   METHOD virtual System.String ToString()
+TYPE Analyzer.Analytics.AnalyticsSession : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsSession, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR(System.Guid SessionKey, System.Guid VisitorProfileKey, System.DateTimeOffset StartUtc, System.DateTimeOffset LastActivityUtc, System.Nullable<System.DateTimeOffset> EndUtc, System.Int32 PageviewCount, System.Boolean IsActive)
+  PROP System.Nullable<System.DateTimeOffset> EndUtc { get; set; }
+  PROP System.Boolean IsActive { get; set; }
+  PROP System.DateTimeOffset LastActivityUtc { get; set; }
+  PROP System.Int32 PageviewCount { get; set; }
+  PROP System.Guid SessionKey { get; set; }
+  PROP System.DateTimeOffset StartUtc { get; set; }
+  PROP System.Guid VisitorProfileKey { get; set; }
+  METHOD Analyzer.Analytics.AnalyticsSession <Clone>$()
+  METHOD System.Void Deconstruct(System.Guid& SessionKey, System.Guid& VisitorProfileKey, System.DateTimeOffset& StartUtc, System.DateTimeOffset& LastActivityUtc, System.Nullable`1[[System.DateTimeOffset, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& EndUtc, System.Int32& PageviewCount, System.Boolean& IsActive)
+  METHOD virtual System.Boolean Equals(Analyzer.Analytics.AnalyticsSession other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()
 TYPE Analyzer.Analytics.IAnalyticsEventStateProvider : interface : <>
   PROP Analyzer.Analytics.AnalyticsEventReceipt CurrentRequestReceipt { get; }
+  PROP Analyzer.Analytics.AnalyticsSession CurrentSession { get; }
 TYPE Analyzer.Features.Visitors.Application.Contracts.IVisitorIdentifier : interface : <>
   METHOD abstract Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity GetCurrent()
 TYPE Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity : struct : interfaces=[System.IEquatable`1[[Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
