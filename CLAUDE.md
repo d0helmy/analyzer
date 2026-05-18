@@ -195,11 +195,14 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-No slice currently in flight. Last shipped: slice 003 (sessions —
-`analyzerSession` table, session resolver + cache, soft-anonymise
-cascade step, sweeper, `IAnalyticsEventStateProvider.CurrentSession`
-+ `AnalyticsSession` public record) — see
-[`specs/003-session-tracking/`](specs/003-session-tracking/) for the
-artifacts. Cross-product Customizer prereq landed at customizer
-`5273c38`; inter-product contract §6 item 2 ratified.
+Slice 004 — custom events: spec + plan + research + data-model +
+contracts + quickstart drafted on branch `004-custom-events`. See
+[`specs/004-custom-events/plan.md`](specs/004-custom-events/plan.md)
+for the implementation plan; all 10 Constitution Check gates PASS.
+2 clarifications resolved (TouchAsync method on slice-003 repo +
+analyzer.send() returns Promise<{eventKey}>). First management
+surface in Analyzer (Principle VII gates apply). No cross-product
+Customizer prereq. Next: `/speckit-tasks` → `/speckit-analyze` →
+`/speckit-implement`.
+Last shipped: slice 003 (sessions).
 <!-- SPECKIT END -->
