@@ -1,0 +1,46 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!--
+    Umbraco — pinned to 17.3.5 per Constitution Tech Stack constraint.
+    Package selection mirrors Customizer's choices for symmetry
+    between the two co-deployed products (see
+    ../customizer/Directory.Packages.props).
+  -->
+  <ItemGroup>
+    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="17.3.5" />
+    <PackageVersion Include="Umbraco.Cms.Web.Website" Version="17.3.5" />
+  </ItemGroup>
+
+  <!--
+    Customizer — currently consumed via a sibling <ProjectReference> in
+    src/Analyzer/Analyzer.csproj because Customizer is not yet
+    NuGet-published (its csproj declares <PackageId>Customizer</PackageId>
+    <Version>0.1.0</Version> but no .nupkg is produced by the dev tree).
+
+    When Customizer publishes (target: the version containing the
+    PageviewCaptured INotification at commit 05e989c per spec
+    Clarification Q1), this should switch to a PackageReference. The
+    intended PackageVersion pin is shown commented-out below for that
+    future switch:
+
+    <PackageVersion Include="Customizer" Version="[0.1.0,)" />
+  -->
+
+  <!--
+    Test stack — xUnit v3 + FluentAssertions (pre-v8 to avoid the
+    commercial-licence change). Versions mirror Customizer's choices.
+    Microsoft.Extensions.Logging.Abstractions is NOT pinned here — it
+    comes transitively from Umbraco at 10.0.4, and explicitly pinning
+    it lower causes an NU1605 package-downgrade error in the test
+    project.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="FluentAssertions" Version="7.2.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+  </ItemGroup>
+</Project>

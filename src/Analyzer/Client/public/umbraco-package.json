@@ -1,0 +1,14 @@
+{
+  "id": "Analyzer",
+  "name": "Analyzer",
+  "version": "0.1.0",
+  "allowTelemetry": false,
+  "extensions": [
+    {
+      "name": "Analyzer Bundle",
+      "alias": "Analyzer.Bundle",
+      "type": "bundle",
+      "js": "/App_Plugins/Analyzer/analyzer.js"
+    }
+  ]
+}

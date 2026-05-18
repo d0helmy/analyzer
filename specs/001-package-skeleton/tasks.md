@@ -34,16 +34,16 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 
 **Purpose**: Project initialization — solution, projects, build configuration, central package management.
 
-- [ ] T001 [P] Create solution file `Analyzer.slnx` at repo root (slnx format; will accept projects added in T009)
-- [ ] T002 [P] Create `Directory.Packages.props` at repo root with Central Package Management enabled. Pin: `Umbraco.Cms.Core` and `Umbraco.Cms.Web.Backoffice` at `17.3.5`; `Customizer` with lower bound `[<slice-011-version>,)` (resolve concrete NuGet version of commit `05e989c` during this task; per research R5); `xunit.v3`, `xunit.v3.assert`, `FluentAssertions` for tests
-- [ ] T003 [P] Create RCL project file `src/Analyzer/Analyzer.csproj`: `<TargetFramework>net10.0</TargetFramework>`, references `Umbraco.Cms.Core` + `Umbraco.Cms.Web.Backoffice` + `Customizer`, declares `<PackageType>UmbracoCmsPackage</PackageType>`, includes `wwwroot/App_Plugins/Analyzer/**` as static web assets
-- [ ] T004 [P] Create test project file `src/Analyzer.Tests/Analyzer.Tests.csproj`: `<TargetFramework>net10.0</TargetFramework>`, `<IsPackable>false</IsPackable>`, references `xunit.v3` + `FluentAssertions`, `<ProjectReference>` to `src/Analyzer/Analyzer.csproj` and `../customizer/src/Customizer/Customizer.csproj`
-- [ ] T005 [P] Create `src/Analyzer/Constants.cs` declaring `AppPluginsPath = "App_Plugins/Analyzer"`, `BackofficeBundleFileName = "analyzer.js"`, `PackageName = "Analyzer"` (no concrete route prefix yet — deferred per Clarification Q5)
-- [ ] T006 [P] Create client manifest `src/Analyzer/Client/package.json`: declares dev-dependencies `vite`, `@umbraco-cms/backoffice@17.3.5`, `vitest`, `typescript@5.x`; scripts `build`, `watch`, `test`
-- [ ] T007 [P] Create `src/Analyzer/Client/tsconfig.json` (target ES2022, strict mode, JSX-react if used by Umbraco backoffice — verify against `@umbraco-cms/backoffice` 17.3.5 conventions during this task)
-- [ ] T008 [P] Create `src/Analyzer/Client/vite.config.ts`: output `analyzer.js` to `../wwwroot/App_Plugins/Analyzer/`, copy `public/umbraco-package.json` alongside, inject version from `package.json` via `define: { __ANALYZER_VERSION__: ... }`
-- [ ] T009 [P] Create `.gitignore` at repo root covering `bin/`, `obj/`, `node_modules/`, `dist/`, `src/Analyzer/wwwroot/App_Plugins/Analyzer/` (built artifact; rebuilt on `dotnet pack`)
-- [ ] T010 Add `src/Analyzer/Analyzer.csproj` and `src/Analyzer.Tests/Analyzer.Tests.csproj` to `Analyzer.slnx` (`dotnet sln Analyzer.slnx add ...`). Depends on T001 + T003 + T004.
+- [X] T001 [P] Create solution file `Analyzer.slnx` at repo root (slnx format; will accept projects added in T009)
+- [X] T002 [P] Create `Directory.Packages.props` at repo root with Central Package Management enabled. Pin: `Umbraco.Cms.Core` and `Umbraco.Cms.Web.Backoffice` at `17.3.5`; `Customizer` with lower bound `[<slice-011-version>,)` (resolve concrete NuGet version of commit `05e989c` during this task; per research R5); `xunit.v3`, `xunit.v3.assert`, `FluentAssertions` for tests
+- [X] T003 [P] Create RCL project file `src/Analyzer/Analyzer.csproj`: `<TargetFramework>net10.0</TargetFramework>`, references `Umbraco.Cms.Core` + `Umbraco.Cms.Web.Backoffice` + `Customizer`, declares `<PackageType>UmbracoCmsPackage</PackageType>`, includes `wwwroot/App_Plugins/Analyzer/**` as static web assets
+- [X] T004 [P] Create test project file `src/Analyzer.Tests/Analyzer.Tests.csproj`: `<TargetFramework>net10.0</TargetFramework>`, `<IsPackable>false</IsPackable>`, references `xunit.v3` + `FluentAssertions`, `<ProjectReference>` to `src/Analyzer/Analyzer.csproj` and `../customizer/src/Customizer/Customizer.csproj`
+- [X] T005 [P] Create `src/Analyzer/Constants.cs` declaring `AppPluginsPath = "App_Plugins/Analyzer"`, `BackofficeBundleFileName = "analyzer.js"`, `PackageName = "Analyzer"` (no concrete route prefix yet — deferred per Clarification Q5)
+- [X] T006 [P] Create client manifest `src/Analyzer/Client/package.json`: declares dev-dependencies `vite`, `@umbraco-cms/backoffice@17.3.5`, `vitest`, `typescript@5.x`; scripts `build`, `watch`, `test`
+- [X] T007 [P] Create `src/Analyzer/Client/tsconfig.json` (target ES2022, strict mode, JSX-react if used by Umbraco backoffice — verify against `@umbraco-cms/backoffice` 17.3.5 conventions during this task)
+- [X] T008 [P] Create `src/Analyzer/Client/vite.config.ts`: output `analyzer.js` to `../wwwroot/App_Plugins/Analyzer/`, copy `public/umbraco-package.json` alongside, inject version from `package.json` via `define: { __ANALYZER_VERSION__: ... }`
+- [X] T009 [P] Create `.gitignore` at repo root covering `bin/`, `obj/`, `node_modules/`, `dist/`, `src/Analyzer/wwwroot/App_Plugins/Analyzer/` (built artifact; rebuilt on `dotnet pack`)
+- [X] T010 Add `src/Analyzer/Analyzer.csproj` and `src/Analyzer.Tests/Analyzer.Tests.csproj` to `Analyzer.slnx` (`dotnet sln Analyzer.slnx add ...`). Depends on T001 + T003 + T004.
 
 ---
 
@@ -53,12 +53,12 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 
 **⚠️ CRITICAL**: No user story phase can run until this phase is complete.
 
-- [ ] T011 [P] Define `IVisitorIdentifier` interface at `src/Analyzer/Features/Visitors/Application/Contracts/IVisitorIdentifier.cs` per `contracts/IVisitorIdentifier.md` (signature: `VisitorIdentity GetCurrent()`; XML docs cite Constitution Principle I and `FR-ID-05`)
-- [ ] T012 [P] Define `VisitorIdentity` `readonly record struct` at `src/Analyzer/Features/Visitors/Application/Contracts/VisitorIdentity.cs` per `data-model.md` (fields: `IsAvailable`, `Key`, `Oid`, `Upn`, `IsAnonymized`; invariants documented in XML docs)
-- [ ] T013 [P] Define `AnalyzerCompositionException : Exception` at `src/Analyzer/Composers/AnalyzerCompositionException.cs` (thrown by composer when Customizer is absent; single-arg ctor accepting the explanation string)
-- [ ] T014 Implement `VisitorIdentifier : IVisitorIdentifier` at `src/Analyzer/Features/Visitors/Application/VisitorIdentifier.cs`: injects `Customizer.Features.Visitors.Application.Contracts.IPersonalizationProfile` + `ILogger<VisitorIdentifier>`; parses `IPersonalizationProfile.IdentityRef` (`oid:` / `upn:` / `anonymized:` prefixes) into `VisitorIdentity`; emits warning log on `upn`-fallback per research R1. Depends on T011 + T012.
-- [ ] T015 Implement `AnalyzerComposer : IComposer` at `src/Analyzer/Composers/AnalyzerComposer.cs`: in `Compose(IUmbracoBuilder builder)`, probes `builder.Services` for a registered descriptor of `IPersonalizationProfile`; throws `AnalyzerCompositionException` with a message naming Customizer + linking `docs/INTER-PRODUCT-CONTRACT.md` if absent; otherwise registers `IVisitorIdentifier → VisitorIdentifier` as scoped. Per research R2. Depends on T011 + T013 + T014.
-- [ ] T016 [P] Implement `UmbracoTestHost` helper at `src/Analyzer.Tests/TestHelpers/UmbracoTestHost.cs`: factory methods `BuildWithCustomizer()` and `BuildWithoutCustomizer()`; uses an in-memory `IServiceCollection` with a minimal Umbraco service surface and Customizer wired in (or omitted); supports injecting a fake `IPersonalizationProfile` to simulate identity claims. Per research R4.
+- [X] T011 [P] Define `IVisitorIdentifier` interface at `src/Analyzer/Features/Visitors/Application/Contracts/IVisitorIdentifier.cs` per `contracts/IVisitorIdentifier.md` (signature: `VisitorIdentity GetCurrent()`; XML docs cite Constitution Principle I and `FR-ID-05`)
+- [X] T012 [P] Define `VisitorIdentity` `readonly record struct` at `src/Analyzer/Features/Visitors/Application/Contracts/VisitorIdentity.cs` per `data-model.md` (fields: `IsAvailable`, `Key`, `Oid`, `Upn`, `IsAnonymized`; invariants documented in XML docs)
+- [X] T013 [P] Define `AnalyzerCompositionException : Exception` at `src/Analyzer/Composers/AnalyzerCompositionException.cs` (thrown by composer when Customizer is absent; single-arg ctor accepting the explanation string)
+- [X] T014 Implement `VisitorIdentifier : IVisitorIdentifier` at `src/Analyzer/Features/Visitors/Application/VisitorIdentifier.cs`: injects `Customizer.Features.Visitors.Application.Contracts.IPersonalizationProfile` + `ILogger<VisitorIdentifier>`; parses `IPersonalizationProfile.IdentityRef` (`oid:` / `upn:` / `anonymized:` prefixes) into `VisitorIdentity`; emits warning log on `upn`-fallback per research R1. Depends on T011 + T012.
+- [X] T015 Implement `AnalyzerComposer : IComposer` at `src/Analyzer/Composers/AnalyzerComposer.cs`: in `Compose(IUmbracoBuilder builder)`, probes `builder.Services` for a registered descriptor of `IPersonalizationProfile`; throws `AnalyzerCompositionException` with a message naming Customizer + linking `docs/INTER-PRODUCT-CONTRACT.md` if absent; otherwise registers `IVisitorIdentifier → VisitorIdentifier` as scoped. Per research R2. Depends on T011 + T013 + T014.
+- [X] T016 [P] Implement `UmbracoTestHost` helper at `src/Analyzer.Tests/TestHelpers/UmbracoTestHost.cs`: factory methods `BuildWithCustomizer()` and `BuildWithoutCustomizer()`; uses an in-memory `IServiceCollection` with a minimal Umbraco service surface and Customizer wired in (or omitted); supports injecting a fake `IPersonalizationProfile` to simulate identity claims. Per research R4.
 
 **Checkpoint**: Foundation complete. `dotnet build Analyzer.slnx` succeeds. User-story phases can begin in parallel.
 
@@ -74,7 +74,7 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 
 > Write tests FIRST; ensure they FAIL before implementation. (Implementation lives in Phase 2 foundational tasks T013 + T015; this Phase 3 task adds the verification harness.)
 
-- [ ] T017 [US1] Write `ComposerSmokeTests` at `src/Analyzer.Tests/Integration/HostBoot/ComposerSmokeTests.cs`:
+- [X] T017 [US1] Write `ComposerSmokeTests` at `src/Analyzer.Tests/Integration/HostBoot/ComposerSmokeTests.cs`:
    - `WithCustomizer_ComposesSuccessfully_RegistersIVisitorIdentifier` — uses `UmbracoTestHost.BuildWithCustomizer()`; asserts `IServiceProvider.GetService<IVisitorIdentifier>()` resolves a non-null `VisitorIdentifier` (covers spec US1 AS1).
    - `WithoutCustomizer_FailsFast_ThrowsAnalyzerCompositionException` — uses `UmbracoTestHost.BuildWithoutCustomizer()`; asserts `Compose(...)` throws `AnalyzerCompositionException` whose message contains "Customizer" and "INTER-PRODUCT-CONTRACT.md" (covers spec US1 AS2).
    - `WithCustomizer_HostBoots_NoAnalyzerErrorsInLog` — fully boots the host; captures `ILogger` output; asserts no `Analyzer` errors logged (covers spec US1 AS3).
@@ -84,7 +84,7 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 
 *(All implementation lives in Phase 2 foundational tasks T013 + T015. No additional implementation tasks here — US1's value is the verified behavior of the composer.)*
 
-- [ ] T018 [US1] Execute `dotnet test --filter "FullyQualifiedName~ComposerSmokeTests"`; verify all three scenarios pass; record the run output (depends on T017)
+- [X] T018 [US1] Execute `dotnet test --filter "FullyQualifiedName~ComposerSmokeTests"`; verify all three scenarios pass; record the run output (depends on T017)
 
 **Checkpoint**: User Story 1 verified. Operator can install Analyzer alongside Customizer with confidence; missing-Customizer case fails fast as designed.
 
@@ -100,14 +100,14 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 
 > Write tests FIRST; ensure they FAIL before T014 (the implementation) is complete.
 
-- [ ] T019 [P] [US2] Write `VisitorIdentifierTests` at `src/Analyzer.Tests/Unit/Features/Visitors/Application/VisitorIdentifierTests.cs` covering all five branches per `contracts/IVisitorIdentifier.md`:
+- [X] T019 [P] [US2] Write `VisitorIdentifierTests` at `src/Analyzer.Tests/Unit/Features/Visitors/Application/VisitorIdentifierTests.cs` covering all five branches per `contracts/IVisitorIdentifier.md`:
    - `GivenOidAndUpn_ReturnsAvailable_OidIsCanonical`
    - `GivenUpnWithoutOid_ReturnsAvailable_LogsWarningOnce`
    - `GivenOidWithoutUpn_ReturnsAvailable_NoWarning`
    - `GivenNoIdentity_ReturnsNotAvailable_NoLog`
    - `GivenAnonymized_ReturnsAvailable_OidAndUpnNull`
    Uses a fake `IPersonalizationProfile` + captured `ILogger<VisitorIdentifier>` (e.g. `NullLogger<T>` with a `TestLoggerProvider` for the warning assertion). Depends on T014.
-- [ ] T020 [P] [US2] Write `IdentitySeamTests` at `src/Analyzer.Tests/Integration/HostBoot/IdentitySeamTests.cs` covering spec US2 AS1, AS2, AS3:
+- [X] T020 [P] [US2] Write `IdentitySeamTests` at `src/Analyzer.Tests/Integration/HostBoot/IdentitySeamTests.cs` covering spec US2 AS1, AS2, AS3:
    - `OidAndUpnPresent_ReturnsOidCanonical_UpnAsDisplay`
    - `UpnOnly_ReturnsUpnCanonical_LogsWarning`
    - `Unauthenticated_ReturnsNoIdentity_NoEventRecorded`
@@ -117,7 +117,7 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 
 *(Implementation is T014 in Phase 2. Phase 4 tasks add tests + verification.)*
 
-- [ ] T021 [US2] Execute `dotnet test --filter "FullyQualifiedName~VisitorIdentifierTests|FullyQualifiedName~IdentitySeamTests"`; verify all five unit branches + three integration scenarios pass (depends on T019 + T020)
+- [X] T021 [US2] Execute `dotnet test --filter "FullyQualifiedName~VisitorIdentifierTests|FullyQualifiedName~IdentitySeamTests"`; verify all five unit branches + three integration scenarios pass (depends on T019 + T020)
 
 **Checkpoint**: User Story 2 verified. The identity seam is correct across all claim shapes and ready for slice 002's pageview-subscription consumers.
 
@@ -133,20 +133,20 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 
 > Write tests FIRST; ensure they FAIL before bundle exists.
 
-- [ ] T022 [P] [US3] Write `index.test.ts` at `src/Analyzer/Client/src/index.test.ts` (Vitest): imports the bundle's entry; asserts `window.Analyzer` is `{ version: <package-json-version> }`. Covers spec US3 AS2.
-- [ ] T023 [P] [US3] Write `BackofficeBundleTests` at `src/Analyzer.Tests/Integration/HostBoot/BackofficeBundleTests.cs`:
+- [X] T022 [P] [US3] Write `index.test.ts` at `src/Analyzer/Client/src/index.test.ts` (Vitest): imports the bundle's entry; asserts `window.Analyzer` is `{ version: <package-json-version> }`. Covers spec US3 AS2.
+- [X] T023 [P] [US3] Write `BackofficeBundleTests` at `src/Analyzer.Tests/Integration/HostBoot/BackofficeBundleTests.cs`:
    - `BundleUrl_ReturnsHttp200` — boots host with Analyzer + Customizer; uses an `HttpClient` against an integration `TestServer`; asserts `GET /App_Plugins/Analyzer/analyzer.js` returns 200.
    - `ManifestUrl_ReturnsHttp200_AndDeclaresAnalyzerJs` — asserts `GET /App_Plugins/Analyzer/umbraco-package.json` returns 200 and the body declares `analyzer.js` as an entrypoint.
    Covers spec US3 AS1. Depends on T016.
 
 ### Implementation for User Story 3
 
-- [ ] T024 [P] [US3] Create `src/Analyzer/Client/public/umbraco-package.json` declaring `analyzer.js` as the bundled extension entrypoint (per Umbraco 17.x backoffice package manifest schema)
-- [ ] T025 [P] [US3] Create `src/Analyzer/Client/src/index.ts` setting `(globalThis as any).Analyzer = { version: __ANALYZER_VERSION__ }`. No other exports, no UI elements registered (per spec Clarification Q4)
-- [ ] T026 [US3] Add MSBuild target to `src/Analyzer/Analyzer.csproj`: `<Target Name="BuildClient" BeforeTargets="Build">` runs `npm install && npm run build` from `Client/`; gates on `Condition="!Exists('Client/node_modules')"` for incremental dev builds. Depends on T006 + T008 + T024 + T025.
-- [ ] T027 [US3] Run `npm install && npm run build` from `src/Analyzer/Client/`; verify `src/Analyzer/wwwroot/App_Plugins/Analyzer/analyzer.js` and `umbraco-package.json` emit. Depends on T024 + T025 + T026.
-- [ ] T028 [US3] Run `npm test` from `src/Analyzer/Client/`; verify T022 (`index.test.ts`) passes. Depends on T022 + T025.
-- [ ] T029 [US3] Run `dotnet test --filter "FullyQualifiedName~BackofficeBundleTests"`; verify both server-side bundle assertions pass. Depends on T023 + T027.
+- [X] T024 [P] [US3] Create `src/Analyzer/Client/public/umbraco-package.json` declaring `analyzer.js` as the bundled extension entrypoint (per Umbraco 17.x backoffice package manifest schema)
+- [X] T025 [P] [US3] Create `src/Analyzer/Client/src/index.ts` setting `(globalThis as any).Analyzer = { version: __ANALYZER_VERSION__ }`. No other exports, no UI elements registered (per spec Clarification Q4)
+- [X] T026 [US3] Add MSBuild target to `src/Analyzer/Analyzer.csproj`: `<Target Name="BuildClient" BeforeTargets="Build">` runs `npm install && npm run build` from `Client/`; gates on `Condition="!Exists('Client/node_modules')"` for incremental dev builds. Depends on T006 + T008 + T024 + T025.
+- [X] T027 [US3] Run `npm install && npm run build` from `src/Analyzer/Client/`; verify `src/Analyzer/wwwroot/App_Plugins/Analyzer/analyzer.js` and `umbraco-package.json` emit. Depends on T024 + T025 + T026.
+- [X] T028 [US3] Run `npm test` from `src/Analyzer/Client/`; verify T022 (`index.test.ts`) passes. Depends on T022 + T025.
+- [X] T029 [US3] Run `dotnet test --filter "FullyQualifiedName~BackofficeBundleTests"`; verify both server-side bundle assertions pass. Depends on T023 + T027.
 
 **Checkpoint**: User Story 3 verified. Backoffice bundle wiring channel is live and ready for slice 004+ to ship content through.
 
@@ -157,12 +157,12 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 **Purpose**: Verify Success Criteria SC-001 through SC-006 + slice-001 publish hygiene.
 
 - [ ] T030 [P] Verify `SC-001` (clean boot in one try): install the built RCL into a fresh Umbraco 17.x host alongside Customizer; record the boot log; confirm no Analyzer-attributable errors. Per `quickstart.md` "Smoke tests — US1".
-- [ ] T031 [P] Verify `SC-002` (build from clean checkout): from a fresh clone run `dotnet restore && dotnet build Analyzer.slnx && cd src/Analyzer/Client && npm install && npm run build`; confirm zero errors and within standard CI build-time expectations.
-- [ ] T032 [P] Verify `SC-003` (identity seam returns canonical key 100% of test cases): inspect the test report from T021; confirm all five branches + three integration cases pass on the first run.
+- [X] T031 [P] Verify `SC-002` (build from clean checkout): from a fresh clone run `dotnet restore && dotnet build Analyzer.slnx && cd src/Analyzer/Client && npm install && npm run build`; confirm zero errors and within standard CI build-time expectations.
+- [X] T032 [P] Verify `SC-003` (identity seam returns canonical key 100% of test cases): inspect the test report from T021; confirm all five branches + three integration cases pass on the first run.
 - [ ] T033 [P] Verify `SC-004` (bundle HTTP 200 + zero JS console errors): open the host backoffice in a browser; check DevTools Network for `/App_Plugins/Analyzer/analyzer.js` HTTP 200 and DevTools Console for zero analyzer-related errors. Per `quickstart.md` "Smoke tests — US3".
-- [ ] T034 [P] Verify `SC-005` (slice 002 unblocked): confirm `AnalyzerComposer` registers `IVisitorIdentifier` and that an imaginary slice 002 author can inject it with zero added wiring.
-- [ ] T035 [P] Verify `SC-006` (test suite passes): run `dotnet test src/Analyzer.Tests/Analyzer.Tests.csproj` + `npm test` from `src/Analyzer/Client/`; confirm all unit + integration + Vitest tests pass.
-- [ ] T036 [P] Add LICENSE + version metadata to `src/Analyzer/Analyzer.csproj` (`<PackageLicenseExpression>`, `<Version>`, `<Authors>`, `<PackageTags>`) per `FR-009` and `NFR-LIC-01`/`NFR-LIC-02`. The license expression mirrors Customizer's choice (verify during this task).
+- [X] T034 [P] Verify `SC-005` (slice 002 unblocked): confirm `AnalyzerComposer` registers `IVisitorIdentifier` and that an imaginary slice 002 author can inject it with zero added wiring.
+- [X] T035 [P] Verify `SC-006` (test suite passes): run `dotnet test src/Analyzer.Tests/Analyzer.Tests.csproj` + `npm test` from `src/Analyzer/Client/`; confirm all unit + integration + Vitest tests pass.
+- [X] T036 [P] Add LICENSE + version metadata to `src/Analyzer/Analyzer.csproj` (`<PackageLicenseExpression>`, `<Version>`, `<Authors>`, `<PackageTags>`) per `FR-009` and `NFR-LIC-01`/`NFR-LIC-02`. The license expression mirrors Customizer's choice (verify during this task).
 - [ ] T037 Run `quickstart.md` end-to-end on a fresh host: complete the US1 / US2 / US3 manual smoke tests as documented; record any deviation. Depends on T030 + T033.
 
 ---

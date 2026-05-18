@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Analyzer</RootNamespace>
+
+    <!-- NuGet package metadata (Constitution Tech Stack + FR-009 / NFR-LIC-01/02) -->
+    <PackageId>Analyzer</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Dia Helmy</Authors>
+    <Description>Umbraco package delivering native, first-party analytics for US-based corporate intranets, where every visitor is authenticated via Azure EntraID SSO.</Description>
+    <PackageTags>umbraco;analytics;intranet;entraid;customizer</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/d0helmy/analyzer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/d0helmy/analyzer</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms.Web.Common" />
+  </ItemGroup>
+
+  <!-- Expose internals to the test assembly so unit tests can call
+       AnalyzerComposer.ConfigureServices and inspect IsCustomizerRegistered
+       without exposing those seams on the public surface. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Analyzer.Tests" />
+  </ItemGroup>
+
+  <!--
+    Customizer dependency: ProjectReference (dev) until Customizer
+    publishes to NuGet. See Directory.Packages.props for the planned
+    switch to <PackageReference Include="Customizer" />.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\customizer\src\Customizer\Customizer.csproj" />
+  </ItemGroup>
+
+  <!--
+    Static web assets: the Vite-built backoffice bundle lands in
+    src/Analyzer/wwwroot/App_Plugins/Analyzer/ and is auto-picked-up
+    by the Razor SDK as static web assets (no explicit <Content>
+    glob needed — adding one duplicates the SDK's default behaviour
+    and triggers NETSDK1022). FR-006 is satisfied by the SDK default.
+  -->
+
+  <!--
+    Build the client bundle before building the server project so the
+    static assets exist when MSBuild copies them. Skips when
+    node_modules is absent (lets `dotnet restore` succeed before the
+    first `npm install` is required).
+  -->
+  <Target Name="BuildAnalyzerClient" BeforeTargets="Build" Condition="Exists('Client/package.json') And Exists('Client/node_modules')">
+    <Exec Command="npm run build" WorkingDirectory="Client" />
+  </Target>
+
+</Project>
