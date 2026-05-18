@@ -156,14 +156,14 @@ Mirrors Customizer's layout (per `plan.md` Project Structure):
 
 **Purpose**: Verify Success Criteria SC-001 through SC-006 + slice-001 publish hygiene.
 
-- [ ] T030 [P] Verify `SC-001` (clean boot in one try): install the built RCL into a fresh Umbraco 17.x host alongside Customizer; record the boot log; confirm no Analyzer-attributable errors. Per `quickstart.md` "Smoke tests — US1".
+- [X] T030 [P] Verify `SC-001` (clean boot in one try): install the built RCL into a fresh Umbraco 17.x host alongside Customizer; record the boot log; confirm no Analyzer-attributable errors. Per `quickstart.md` "Smoke tests — US1".
 - [X] T031 [P] Verify `SC-002` (build from clean checkout): from a fresh clone run `dotnet restore && dotnet build Analyzer.slnx && cd src/Analyzer/Client && npm install && npm run build`; confirm zero errors and within standard CI build-time expectations.
 - [X] T032 [P] Verify `SC-003` (identity seam returns canonical key 100% of test cases): inspect the test report from T021; confirm all five branches + three integration cases pass on the first run.
-- [ ] T033 [P] Verify `SC-004` (bundle HTTP 200 + zero JS console errors): open the host backoffice in a browser; check DevTools Network for `/App_Plugins/Analyzer/analyzer.js` HTTP 200 and DevTools Console for zero analyzer-related errors. Per `quickstart.md` "Smoke tests — US3".
+- [X] T033 [P] Verify `SC-004` (bundle HTTP 200 + zero JS console errors): open the host backoffice in a browser; check DevTools Network for `/App_Plugins/Analyzer/analyzer.js` HTTP 200 and DevTools Console for zero analyzer-related errors. Per `quickstart.md` "Smoke tests — US3".
 - [X] T034 [P] Verify `SC-005` (slice 002 unblocked): confirm `AnalyzerComposer` registers `IVisitorIdentifier` and that an imaginary slice 002 author can inject it with zero added wiring.
 - [X] T035 [P] Verify `SC-006` (test suite passes): run `dotnet test src/Analyzer.Tests/Analyzer.Tests.csproj` + `npm test` from `src/Analyzer/Client/`; confirm all unit + integration + Vitest tests pass.
 - [X] T036 [P] Add LICENSE + version metadata to `src/Analyzer/Analyzer.csproj` (`<PackageLicenseExpression>`, `<Version>`, `<Authors>`, `<PackageTags>`) per `FR-009` and `NFR-LIC-01`/`NFR-LIC-02`. The license expression mirrors Customizer's choice (verify during this task).
-- [ ] T037 Run `quickstart.md` end-to-end on a fresh host: complete the US1 / US2 / US3 manual smoke tests as documented; record any deviation. Depends on T030 + T033.
+- [X] T037 Run `quickstart.md` end-to-end on a fresh host: complete the US1 / US2 / US3 manual smoke tests as documented; record any deviation. Depends on T030 + T033.
 
 ---
 

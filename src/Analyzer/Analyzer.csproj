@@ -6,6 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Analyzer</RootNamespace>
 
+    <!-- Without this, Razor SDK maps RCL static assets to
+         /_content/Analyzer/App_Plugins/Analyzer/ which Umbraco's
+         backoffice manifest discovery doesn't look at. Setting the
+         base path to / serves them at /App_Plugins/Analyzer/...
+         where umbraco-package.json expects them.
+         Mirrors Customizer.csproj. -->
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+
     <!-- NuGet package metadata (Constitution Tech Stack + FR-009 / NFR-LIC-01/02) -->
     <PackageId>Analyzer</PackageId>
     <Version>0.1.0</Version>
