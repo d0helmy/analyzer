@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Open handoff: US-framing alignment from Adjuster session (added 2026-05-18)
+
+A jurisdiction-alignment pass was made on `Analytics_Intranet_Requirements.md` from the sibling Adjuster (`../adjuster`) session on 2026-05-18. The edits are committed as `798aac9` on branch `001-package-skeleton`, pushed to `origin/001-package-skeleton`. The matching commit on the Adjuster side is `997f9e3` on `d0helmy/adjuster` `main`.
+
+### Action for the next Analyzer agent
+
+1. Review the alignment commit (`git show 798aac9`) and verify it remains consistent with this project's constitution and any in-flight work on `001-package-skeleton`.
+2. Merge `001-package-skeleton` into `main` (PR link: `https://github.com/d0helmy/analyzer/pull/new/001-package-skeleton`).
+3. Update **this CLAUDE.md** to match the new framing — the "Orientation for AI agents" section still says "explicit DPO approval" for `FR-DIM-03` (geo); change to "explicit privacy/compliance owner approval" so the orientation note matches the aligned requirements doc.
+4. Remove this handoff section once steps 1–3 land.
+
+### What the alignment commit changed
+
+- Replaced GDPR / EDPB / Article 88 / Article 30 references with CCPA / CPRA + state electronic-monitoring notice statutes (NY §52-c, CT §31-48d, DE Title 19 §705).
+- Renamed "Data Protection Officer" / "works council" stakeholder to "privacy/compliance officer" throughout (§§2.3, 3.3, 4.3, 5.3, 6.1, 6.2, 6.3).
+- Retitled §5.3 "Security and Privacy (Employee Monitoring)" → "Security and Data Handling"; added a US-jurisdiction prelude paragraph paralleling Adjuster §5.3.
+- Cross-references in §2.4 and §5.3 now name **Customizer (Personalization)** and **Adjuster (A/B Testing)** explicitly (was: abstract "Personalization specification").
+- Added **NFR-CMP-05** covering coexistence with Adjuster and Customizer; widened **FR-ENR-04** sensitive-attribute list to match Adjuster's `FR-IDP-06`.
+
 # Analyzer
 
 An Umbraco package being built against the **Umbraco Engage Analytics**
