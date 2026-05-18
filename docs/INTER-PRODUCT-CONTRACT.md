@@ -112,7 +112,7 @@ Analyzer's read needs:
   profile property bag for arbitrary third-party data enrichment".
   Analyzer needs this for EntraID-claim enrichment per the Analyzer
   spec (`FR-ENR-*` — `department`, `officeLocation`, etc.).
-  **Open question (see §6 item 2):** does Analyzer add a Customizer-side
+  **Open question (see §6 item 3):** does Analyzer add a Customizer-side
   extension point (touches Customizer's pinned surface — small bump) or
   ship its own side table keyed on visitor `Key` (no Customizer change,
   some query-join cost)?
@@ -202,7 +202,7 @@ Analyzer reads from `IVisitorReachedGoalsLookup` and the underlying
 goal-completion store (likely needs a `IGoalCompletionStore` or
 similar read contract — additive on Customizer's public surface).
 
-**Open question (see §6 item 3):** Analyzer's `FR-GOL-*` spec items
+**Open question (see §6 item 4):** Analyzer's `FR-GOL-*` spec items
 include a more elaborate goal-definition model than Customizer's
 slice-007 needs (e.g. multi-step funnels, time-bounded goals).
 Does Analyzer drop those items, or are they expansions to Customizer's
@@ -322,7 +322,7 @@ Analyzer  slice 011  Traffic Filters
 Analyzer  slice 012  Top-level reports + dashboards
 Analyzer  slice 013  Anonymisation cascade-step registrations
 Analyzer  slice 014  Per-EntraID enrichment (FR-ENR-*) — gated on
-                     §6 item 2 resolution
+                     §6 item 3 resolution
 ```
 
 Slice ordering is illustrative; sequence by user value, not by this
@@ -357,17 +357,32 @@ additive on top of Customizer's existing substrate.
 
 ## 6. Things requiring explicit user sign-off before ratification
 
-1. **`PageviewCaptured` notification on Customizer (D2)** — Analyzer's
-   subscription model needs Customizer to publish an `INotification`
-   from its pageview-capture middleware. This is a one-PR additive
-   change on Customizer (let's call it slice 011) and is the only
-   Customizer-side prerequisite for Analyzer to start. **Confirm
-   you're OK landing this single small slice on Customizer before
-   opening Analyzer.** Alternative: Analyzer reads from
-   `customizerPageview` polling-style instead of notification-driven,
-   which is uglier but needs zero Customizer change.
+1. ~~**`PageviewCaptured` notification on Customizer (D2)**~~ — ✅
+   **Ratified + shipped 2026-05-17 at Customizer `05e989c` (slice
+   011).** Analyzer's slice 002 subscribes via the
+   `INotificationAsyncHandler<PageviewCaptured>` pattern. No further
+   action.
 
-2. **Per-EntraID profile enrichment (D1 / `FR-ENR-*`)** — Analyzer
+2. **`Pageview.UserAgent` field on Customizer (Analyzer slice 003
+   prereq)** — Analyzer's session resolver needs a stable per-request
+   `User-Agent` value to derive a truncated SHA-256 device-key per
+   `(visitor, device)` pair. Reading UA from
+   `IHttpContextAccessor` at handler-entry is unreliable under
+   typical fire-and-forget timing (handler runs on a `Task.Run` thread
+   after the request scope is disposed; `HttpContext` returns null).
+   The resolution: Customizer's `PageviewCaptureMiddleware` captures
+   UA synchronously on the request thread and threads it through the
+   `PageviewCaptured` notification as the 10th positional record
+   parameter on `Pageview`. This is a one-PR additive change on
+   Customizer (cross-product slice `cross-product/pageview-user-agent`
+   per `specs/003-session-tracking/customizer-prereq.md`). **In-memory
+   only** — `PageviewDto` does not gain a column; no Customizer-side
+   migration. Analyzer hashes UA to `deviceKey` before its own
+   persistence. MINOR-additive per Customizer's positional-record
+   additivity convention; pinning snapshot unchanged (`Pageview`'s
+   namespace is not in Customizer's pinned namespace list).
+
+3. **Per-EntraID profile enrichment (D1 / `FR-ENR-*`)** — Analyzer
    needs to attach `department`, `officeLocation`, etc. to the visitor
    profile. Options:
    - **(a)** Add an extensibility hook on Customizer's `VisitorProfile`
@@ -379,31 +394,31 @@ additive on top of Customizer's existing substrate.
    Recommend **(b)** to keep the invariant "Analyzer never touches
    Customizer's pinned surface".
 
-3. **Goal model expansion (D5)** — Analyzer's spec hints at richer
+4. **Goal model expansion (D5)** — Analyzer's spec hints at richer
    goal semantics (multi-step funnels, time-bounded). Confirm
    Analyzer v1 sticks to Customizer's slice-007 goal model
    (single-event match) and defers funnels/etc. to a later phase
    that may expand Customizer's goals feature.
 
-4. **UTM capture ownership** — D6 keeps UTM in Customizer. Unchanged
+5. **UTM capture ownership** — D6 keeps UTM in Customizer. Unchanged
    from v1. Confirm this still holds under the inverted layering
    (it should — Customizer is now the canonical owner anyway).
 
-5. ~~**Dependency direction**~~ — ✅ **Ratified 2026-05-17: Analyzer
+6. ~~**Dependency direction**~~ — ✅ **Ratified 2026-05-17: Analyzer
    depends on Customizer.** Driven by Customizer being shipped/tested
    and the always-deployed-together operator commitment.
 
-6. ~~**Customizer major version bump**~~ — ✅ **Ratified: not
+7. ~~**Customizer major version bump**~~ — ✅ **Ratified: not
    required.** The inverted layering means Customizer's public
    surface is unchanged.
 
-7. ~~**Identity claim ordering**~~ — ✅ **Ratified 2026-05-17:
+8. ~~**Identity claim ordering**~~ — ✅ **Ratified 2026-05-17:
    `oid`-first, `upn`-fallback.** See D10.
 
-8. ~~**Slice 010 sizing**~~ — ✅ **Ratified: N/A.** No Customizer
-   retrofit slice exists under the inverted layering. The only
-   Customizer-side work is item 1 above (the `PageviewCaptured`
-   notification).
+9. ~~**Slice 010 sizing**~~ — ✅ **Ratified: N/A.** No Customizer
+   retrofit slice exists under the inverted layering. The
+   Customizer-side prerequisites are items 1 (✅ shipped) and 2
+   (`Pageview.UserAgent`, paired with Analyzer slice 003).
 
 ---
 

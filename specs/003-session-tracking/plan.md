@@ -23,6 +23,8 @@ Both are picked up by the slice-002 `PublicSurfacePinningTests`; the baseline re
 
 The migration runs under Umbraco's standard migration pipeline, appended to the existing `AnalyzerMigrationPlan` after `M0001`. Integration tests reuse slice-002's `AnalyzerIntegrationTestBase` against a real SQL Server container (Aspire-persistent locally; Testcontainers in CI), tagged `Category=Integration` so CI continues to opt them out (lessons #31 + #32).
 
+**Cross-product prerequisite**: a paired Customizer-side change adds `string? UserAgent` as the 10th positional record param on `Customizer.Features.Visitors.Domain.Pageview`, captured synchronously on the request thread by `PageviewCaptureMiddleware`. See [`customizer-prereq.md`](customizer-prereq.md) for the self-contained Customizer-side TODO. This prerequisite is the result of `/speckit-analyze` finding C1 — without it, slice 003's `deviceKey` source (`HttpContext.Request.Headers.UserAgent`) is unreliable under typical fire-and-forget handler timing. Slice 003's MVP cannot merge before the Customizer change lands. Integration tests will fail until merged; unit tests work against a synthetic `Pageview.UserAgent` stub.
+
 ## Technical Context
 
 **Language/Version**: C# 13 / .NET 10.0 (server). No client-side change in slice 003 (backoffice bundle stays slice-001's empty token; reports + content app arrive at slices 005/012).
@@ -158,6 +160,9 @@ src/Analyzer/
 │   ├── AnalyticsEventReceipt.cs                       # unchanged (slice-002 record)
 │   └── AnalyticsSession.cs                            # NEW: public immutable record (pinned)
 ├── Features/
+│   ├── Common/                                        # NEW: shared internal helpers across slices
+│   │   └── Persistence/
+│   │       └── UniqueConstraintViolationDetector.cs   # NEW: extracted from slice-002 AnalyzerEventReceiptRepository; shared with slice-003 AnalyzerSessionRepository
 │   ├── Visitors/                                      # unchanged from slice 001
 │   ├── Events/
 │   │   ├── Application/
@@ -169,7 +174,7 @@ src/Analyzer/
 │   │       ├── Persistence/
 │   │       │   ├── AnalyzerEventReceiptDto.cs         # MODIFIED: +SessionKey nullable Guid column
 │   │       │   ├── IAnalyzerEventReceiptRepository.cs # unchanged signature (InsertAsync(AnalyticsEventReceipt) already carries everything via the record)
-│   │       │   └── AnalyzerEventReceiptRepository.cs  # MODIFIED: maps Receipt.SessionKey → DTO.SessionKey on insert (no other change)
+│   │       │   └── AnalyzerEventReceiptRepository.cs  # MODIFIED: maps Receipt.SessionKey → DTO.SessionKey on insert; consumes shared UniqueConstraintViolationDetector (T011)
 │   │       └── Dispatcher/
 │   │           ├── AnalyzerEventReceiptWriteOp.cs     # unchanged shape; carries the existing AnalyticsEventReceipt (sessionKey lives on the record per AnalyticsEventReceipt addition below)
 │   │           ├── AnalyzerEventReceiptWriteQueue.cs  # unchanged
