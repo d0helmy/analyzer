@@ -15,4 +15,6 @@ internal sealed class AnalyticsEventStateProvider : IAnalyticsEventStateProvider
         _store = store;
 
     public AnalyticsEventReceipt? CurrentRequestReceipt => _store.CurrentRequestReceipt;
+
+    public AnalyticsSession? CurrentSession => _store.CurrentSession;
 }

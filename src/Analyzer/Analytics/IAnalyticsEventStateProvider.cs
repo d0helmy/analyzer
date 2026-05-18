@@ -14,14 +14,14 @@ namespace Analyzer.Analytics;
 /// </para>
 /// <list type="bullet">
 ///   <item>Slice 002 — <see cref="CurrentRequestReceipt"/>.</item>
-///   <item>Slice 003 — session-state members.</item>
+///   <item>Slice 003 — <see cref="CurrentSession"/>.</item>
 ///   <item>Slice 004 — <c>CurrentRequestCustomEvents</c>.</item>
 ///   <item>Slice 007 — <c>CurrentVideoState</c>.</item>
 /// </list>
 /// <para>
 /// Breaking changes to existing members are PROHIBITED outside MAJOR
-/// releases (Constitution Principle X). The slice-002 pinning baseline
-/// captures the current shape.
+/// releases (Constitution Principle X). The pinning baseline regenerates
+/// on each additive change with a Sync Impact note in the slice spec.
 /// </para>
 /// <para>
 /// Registered with <b>scoped</b> DI lifetime — one instance per HTTP
@@ -46,4 +46,13 @@ public interface IAnalyticsEventStateProvider
     /// the dispatch runs synchronously inside the request scope.
     /// </remarks>
     AnalyticsEventReceipt? CurrentRequestReceipt { get; }
+
+    /// <summary>
+    /// Slice 003 — the current request's resolved session, or
+    /// <c>null</c> when the subscriber has not yet completed. Same
+    /// scoping semantics as <see cref="CurrentRequestReceipt"/>:
+    /// typically <c>null</c> on the pageview request itself; reliably
+    /// populated on in-request consumer flows at later slices.
+    /// </summary>
+    AnalyticsSession? CurrentSession { get; }
 }

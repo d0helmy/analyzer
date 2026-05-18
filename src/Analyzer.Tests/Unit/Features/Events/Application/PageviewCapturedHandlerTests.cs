@@ -1,5 +1,7 @@
+using Analyzer.Analytics;
 using Analyzer.Features.Events.Application;
 using Analyzer.Features.Events.Infrastructure.Dispatcher;
+using Analyzer.Features.Sessions.Application;
 using Customizer.Features.Visitors.Application.Contracts;
 using Customizer.Features.Visitors.Domain;
 using FluentAssertions;
@@ -18,7 +20,7 @@ public sealed class PageviewCapturedHandlerTests
     [Fact]
     public async Task EnqueuesReceiptForValidNotification()
     {
-        var (queue, handler) = Build(capacity: 4);
+        var (queue, handler, _) = Build(capacity: 4);
         var pageview = NewPageview(Guid.NewGuid(), Guid.NewGuid());
 
         await handler.HandleAsync(
@@ -35,7 +37,7 @@ public sealed class PageviewCapturedHandlerTests
     [Fact]
     public async Task SkipsEmptyPageviewKey()
     {
-        var (queue, handler) = Build(capacity: 4);
+        var (queue, handler, _) = Build(capacity: 4);
         var pageview = NewPageview(Guid.Empty, Guid.NewGuid());
 
         await handler.HandleAsync(
@@ -48,7 +50,7 @@ public sealed class PageviewCapturedHandlerTests
     [Fact]
     public async Task SkipsEmptyVisitorProfileKey()
     {
-        var (queue, handler) = Build(capacity: 4);
+        var (queue, handler, _) = Build(capacity: 4);
         var pageview = NewPageview(Guid.NewGuid(), Guid.Empty);
 
         await handler.HandleAsync(
@@ -61,7 +63,7 @@ public sealed class PageviewCapturedHandlerTests
     [Fact]
     public async Task LogsDropWhenQueueFull_ThenReturns()
     {
-        var (queue, handler) = Build(capacity: 1);
+        var (queue, handler, _) = Build(capacity: 1);
         // Fill the queue.
         queue.TryEnqueue(new AnalyzerEventReceiptWriteOp(
             new Analytics.AnalyticsEventReceipt(
@@ -84,7 +86,7 @@ public sealed class PageviewCapturedHandlerTests
         // via a null op) by wrapping it — easier to just pass a notification
         // whose Pageview triggers internal logic to throw before TryEnqueue.
         // The handler's outer try/catch must catch any throw.
-        var (_, handler) = Build(capacity: 4);
+        var (_, handler, _) = Build(capacity: 4);
 
         // PageviewCaptured cannot carry a null Pageview (record positional
         // ctor would NRE earlier). Instead, construct one whose properties
@@ -103,17 +105,63 @@ public sealed class PageviewCapturedHandlerTests
         await act.Should().NotThrowAsync();
     }
 
-    private static (AnalyzerEventReceiptWriteQueue queue, PageviewCapturedHandler handler) Build(int capacity)
+    private static (AnalyzerEventReceiptWriteQueue queue, PageviewCapturedHandler handler, FakeSessionResolver resolver) Build(int capacity)
     {
         var queue = new AnalyzerEventReceiptWriteQueue(
             Options.Create(new AnalyzerWriteQueueOptions { WriteQueueCapacity = capacity }));
         var timeProvider = new FixedTimeProvider(FixedNow);
+        var resolver = new FakeSessionResolver();
         var handler = new PageviewCapturedHandler(
             queue,
+            resolver,
             new HttpContextAccessor(),
             timeProvider,
             NullLogger<PageviewCapturedHandler>.Instance);
-        return (queue, handler);
+        return (queue, handler, resolver);
+    }
+
+    /// <summary>
+    /// In-process fake for <see cref="IAnalyzerSessionResolver"/> —
+    /// returns a deterministic session per call. Captures the inputs
+    /// so tests can assert the handler routed UA / visitorKey /
+    /// receivedUtc correctly.
+    /// </summary>
+    private sealed class FakeSessionResolver : IAnalyzerSessionResolver
+    {
+        public Guid LastVisitorKey { get; private set; }
+        public string? LastUserAgent { get; private set; }
+        public DateTimeOffset LastReceivedUtc { get; private set; }
+        public int CallCount { get; private set; }
+        public Guid NextSessionKey { get; set; } = Guid.NewGuid();
+        public Exception? ThrowOnNextCall { get; set; }
+
+        public ValueTask<SessionResolutionResult> ResolveAsync(
+            Guid visitorProfileKey,
+            string? userAgent,
+            DateTimeOffset receivedUtc,
+            CancellationToken ct)
+        {
+            CallCount++;
+            LastVisitorKey = visitorProfileKey;
+            LastUserAgent = userAgent;
+            LastReceivedUtc = receivedUtc;
+
+            if (ThrowOnNextCall is { } ex)
+            {
+                ThrowOnNextCall = null;
+                throw ex;
+            }
+
+            var projection = new AnalyticsSession(
+                SessionKey: NextSessionKey,
+                VisitorProfileKey: visitorProfileKey,
+                StartUtc: receivedUtc,
+                LastActivityUtc: receivedUtc,
+                EndUtc: null,
+                PageviewCount: 1,
+                IsActive: true);
+            return ValueTask.FromResult(new SessionResolutionResult(NextSessionKey, projection));
+        }
     }
 
     private static Pageview NewPageview(Guid pageviewKey, Guid visitorKey) => new(
