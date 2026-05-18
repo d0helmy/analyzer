@@ -1,12 +1,15 @@
+using Analyzer.Features.Events.Application;
+using Analyzer.Features.Events.Infrastructure.Dispatcher;
+using Analyzer.Features.Events.Infrastructure.Persistence;
 using Analyzer.Features.Visitors.Application;
 using Analyzer.Features.Visitors.Application.Contracts;
 using Customizer.Composers;
 using Customizer.Features.Visitors.Application.Contracts;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
+using Umbraco.Cms.Core.Events;
 
 namespace Analyzer.Composers;
 
@@ -29,7 +32,12 @@ namespace Analyzer.Composers;
 public sealed class AnalyzerComposer : IComposer
 {
     public void Compose(IUmbracoBuilder builder)
-        => ConfigureServices(builder.Services);
+    {
+        builder.Services.Configure<AnalyzerWriteQueueOptions>(
+            builder.Config.GetSection("Analyzer:WriteQueue"));
+
+        ConfigureServices(builder.Services);
+    }
 
     /// <summary>
     /// Wire the Analyzer service graph into <paramref name="services"/>.
@@ -54,9 +62,24 @@ public sealed class AnalyzerComposer : IComposer
         // but call AddHttpContextAccessor to be safe in minimal test hosts.
         services.AddHttpContextAccessor();
 
-        // FR-003 + Constitution Principle X: scoped per spec
+        // Slice-001 — FR-003 + Constitution Principle X: scoped per spec
         // Clarification Q3 (HttpContext-aligned lifetime).
         services.AddScoped<IVisitorIdentifier, VisitorIdentifier>();
+
+        // Slice-002 — TimeProvider for the handler + dispatcher
+        // (TryAdd so tests can override).
+        services.TryAddSingleton(TimeProvider.System);
+
+        // Slice-002 — bounded write queue (singleton; single instance
+        // per host) + scoped repository + hosted dispatcher + transient
+        // notification handler. Mirrors Customizer's
+        // VisitorAnalyticsComposer wiring.
+        services.AddSingleton<AnalyzerEventReceiptWriteQueue>();
+        services.AddScoped<IAnalyzerEventReceiptRepository, AnalyzerEventReceiptRepository>();
+        services.AddHostedService<AnalyzerEventReceiptWriteDispatcher>();
+        services.AddTransient<
+            INotificationAsyncHandler<PageviewCaptured>,
+            PageviewCapturedHandler>();
     }
 
     internal static bool IsCustomizerRegistered(IServiceCollection services)

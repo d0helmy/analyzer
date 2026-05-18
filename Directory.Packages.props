@@ -64,5 +64,13 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="FluentAssertions" Version="7.2.2" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <!-- Slice 002 integration-test substrate: spin up an ephemeral SQL
+         Server container when the Aspire AppHost isn't already running
+         (research §7). Test-only; never referenced by src/Analyzer. -->
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.6.0" />
+    <!-- WebApplicationFactory<Program> + Aspire-compatible SQL client
+         for slice-002 integration tests. Versions mirror Customizer. -->
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.1" />
   </ItemGroup>
 </Project>
