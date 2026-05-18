@@ -195,14 +195,12 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-Slice 004 — custom events: spec + plan + research + data-model +
-contracts + quickstart drafted on branch `004-custom-events`. See
-[`specs/004-custom-events/plan.md`](specs/004-custom-events/plan.md)
-for the implementation plan; all 10 Constitution Check gates PASS.
-2 clarifications resolved (TouchAsync method on slice-003 repo +
-analyzer.send() returns Promise<{eventKey}>). First management
-surface in Analyzer (Principle VII gates apply). No cross-product
-Customizer prereq. Next: `/speckit-tasks` → `/speckit-analyze` →
-`/speckit-implement`.
-Last shipped: slice 003 (sessions).
+No slice currently in flight. Last shipped: slice 004 (custom events
+— `analyzerCustomEvent` table, `window.analyzer.send()` client API +
+management endpoint, `IAnalyzerSessionRepository.TouchAsync`,
+`IAnalyticsEventStateProvider.CurrentRequestCustomEvents`,
+`AnalyzerCustomEventCascadeStep` hard-delete on anonymisation, and
+the first Principle-VII-gated management surface in Analyzer) — see
+[`specs/004-custom-events/`](specs/004-custom-events/) for the
+artifacts. No cross-product Customizer prereq required.
 <!-- SPECKIT END -->
