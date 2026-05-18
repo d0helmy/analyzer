@@ -4,8 +4,10 @@ using Analyzer.Features.Events.Application.Anonymization;
 using Analyzer.Features.Events.Infrastructure.Dispatcher;
 using Analyzer.Features.Events.Infrastructure.Persistence;
 using Analyzer.Features.Sessions.Application;
+using Analyzer.Features.Sessions.Application.Anonymization;
 using Analyzer.Features.Sessions.Infrastructure.Configuration;
 using Analyzer.Features.Sessions.Infrastructure.Persistence;
+using Analyzer.Features.Sessions.Infrastructure.Sweeper;
 using Analyzer.Features.Visitors.Application;
 using Analyzer.Features.Visitors.Application.Contracts;
 using Customizer.Composers;
@@ -111,6 +113,16 @@ public sealed class AnalyzerComposer : IComposer
         services.AddSingleton<AnalyzerSessionCacheStore>();
         services.AddScoped<IAnalyzerSessionRepository, AnalyzerSessionRepository>();
         services.AddScoped<IAnalyzerSessionResolver, AnalyzerSessionResolver>();
+
+        // Slice-003 US2 — second IAnonymizationCascadeStep registration
+        // (alongside slice-002's AnalyzerEventReceiptCascadeStep). Both
+        // run inside Customizer's outer NPoco scope at anonymisation
+        // time; ordering between them is irrelevant (disjoint tables).
+        services.AddScoped<IAnonymizationCascadeStep, AnalyzerSessionCascadeStep>();
+
+        // Slice-003 US3 — background sweeper closes inactive sessions
+        // on a configurable cadence. Singleton hosted service.
+        services.AddHostedService<AnalyzerSessionSweeperService>();
     }
 
     internal static bool IsCustomizerRegistered(IServiceCollection services)
