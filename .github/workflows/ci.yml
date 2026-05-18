@@ -48,11 +48,18 @@ jobs:
           path: analyzer
 
       - name: Checkout Customizer sibling (for ProjectReference)
+        # The default GITHUB_TOKEN is repo-scoped to d0helmy/analyzer
+        # and cannot fetch d0helmy/customizer (private). A dedicated
+        # fine-grained PAT is required.
+        #
+        # Setup (one-time): create a fine-grained PAT scoped to
+        # d0helmy/customizer with `Contents: Read` permission, then:
+        #   gh secret set CUSTOMIZER_REPO_TOKEN --body "<pat>"
         uses: actions/checkout@v4
         with:
           repository: d0helmy/customizer
           path: customizer
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CUSTOMIZER_REPO_TOKEN }}
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
