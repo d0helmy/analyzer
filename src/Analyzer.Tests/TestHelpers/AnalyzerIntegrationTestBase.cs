@@ -118,7 +118,12 @@ public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
     {
         var csb = new SqlConnectionStringBuilder(connectionString);
         var targetDb = csb.InitialCatalog;
-        if (string.IsNullOrWhiteSpace(targetDb))
+        // Testcontainers' default GetConnectionString() sets Database=master.
+        // master cannot be dropped (and the ephemeral container is already
+        // clean per test class), so skip the reset; warm-DB env-var setups
+        // are expected to point at a non-master catalog.
+        if (string.IsNullOrWhiteSpace(targetDb)
+            || string.Equals(targetDb, "master", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
