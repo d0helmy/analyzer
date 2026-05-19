@@ -16,6 +16,8 @@ namespace Analyzer.Analytics;
 ///   <item>Slice 002 — <see cref="CurrentRequestReceipt"/>.</item>
 ///   <item>Slice 003 — <see cref="CurrentSession"/>.</item>
 ///   <item>Slice 004 — <c>CurrentRequestCustomEvents</c>.</item>
+///   <item>Slice 005 — <c>CurrentRequestFormEvents</c> +
+///     <c>CurrentRequestFormFieldEvents</c>.</item>
 ///   <item>Slice 007 — <c>CurrentVideoState</c>.</item>
 /// </list>
 /// <para>
@@ -71,4 +73,25 @@ public interface IAnalyticsEventStateProvider
     /// slice-002/003 caveats).
     /// </remarks>
     IReadOnlyList<AnalyticsCustomEvent> CurrentRequestCustomEvents { get; }
+
+    /// <summary>
+    /// Slice 005 — the form lifecycle events
+    /// (<see cref="AnalyzerFormEventType.Impression"/> /
+    /// <see cref="AnalyzerFormEventType.Start"/> /
+    /// <see cref="AnalyzerFormEventType.Success"/>) captured in the
+    /// current request scope. Empty list when none captured (never
+    /// null). <see cref="AnalyzerFormEventType.Abandon"/> rows are
+    /// materialised by the sweeper and never visible through this
+    /// per-request projection.
+    /// </summary>
+    IReadOnlyList<AnalyticsFormEvent> CurrentRequestFormEvents { get; }
+
+    /// <summary>
+    /// Slice 005 — the form field events
+    /// (<see cref="AnalyzerFormFieldEventType.FieldFocus"/> /
+    /// <see cref="AnalyzerFormFieldEventType.FieldUnfocus"/>) captured
+    /// in the current request scope. Empty list when none captured
+    /// (never null).
+    /// </summary>
+    IReadOnlyList<AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents { get; }
 }

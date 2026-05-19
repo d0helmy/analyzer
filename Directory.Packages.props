@@ -23,6 +23,13 @@
     <PackageVersion Include="Umbraco.Cms.Web.Website" Version="17.3.5" />
     <PackageVersion Include="Umbraco.Cms" Version="17.*" />
     <PackageVersion Include="Umbraco.Cms.DevelopmentMode.Backoffice" Version="17.*" />
+    <!-- Slice 005 — Umbraco.Forms 17.x pin. Floating range tolerates host
+         minor bumps without per-bump edits; matches the Umbraco.Cms.* pin
+         pattern above. The meta package references the field-type
+         abstractions (Umbraco.Forms.Core.Providers.FieldTypes) the RCL
+         consumes plus the Forms notification surface the host integrates
+         with. -->
+    <PackageVersion Include="Umbraco.Forms" Version="[17.0.0,18.0.0)" />
     <PackageVersion Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
   </ItemGroup>
 

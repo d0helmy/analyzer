@@ -107,6 +107,23 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
         SessionActivityKind activityKind,
         CancellationToken ct)
     {
+        if (activityKind == SessionActivityKind.FormImpression)
+        {
+            // Slice 005 — passive read. Impressions are observational
+            // (IntersectionObserver), not engagement; they MUST NOT
+            // keep a session alive past the inactivity timeout.
+            // Project the existing entry without TouchAsync / ExtendAsync.
+            var passiveProjection = new AnalyticsSession(
+                SessionKey: entry.SessionKey,
+                VisitorProfileKey: visitorProfileKey,
+                StartUtc: entry.StartUtc,
+                LastActivityUtc: entry.LastActivityUtc,
+                EndUtc: null,
+                PageviewCount: entry.PageviewCount,
+                IsActive: true);
+            return new SessionResolutionResult(entry.SessionKey, passiveProjection);
+        }
+
         if (activityKind == SessionActivityKind.CustomEvent)
         {
             // Custom-event flow: advance lastActivityUtc only; do NOT

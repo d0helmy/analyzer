@@ -28,6 +28,10 @@
 
   <ItemGroup>
     <PackageReference Include="Umbraco.Cms.Web.Common" />
+    <!-- Slice 005 — Umbraco.Forms field-type registration
+         (AnalyzerVisitorIdField) + FormSubmittingNotification handler.
+         The meta package supplies the abstractions the RCL consumes. -->
+    <PackageReference Include="Umbraco.Forms" />
   </ItemGroup>
 
   <!-- Expose internals to the test assembly so unit tests can call

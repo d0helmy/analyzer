@@ -11,6 +11,9 @@
   <ItemGroup>
     <PackageReference Include="Umbraco.Cms" />
     <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" />
+    <!-- Slice 005 — render real forms in integration tests + the sample
+         host's backoffice. Same Umbraco.Forms meta pin as the RCL. -->
+    <PackageReference Include="Umbraco.Forms" />
   </ItemGroup>
 
   <ItemGroup>

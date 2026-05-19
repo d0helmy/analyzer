@@ -14,6 +14,8 @@ internal sealed class AnalyticsEventStateStore
     private AnalyticsEventReceipt? _currentReceipt;
     private AnalyticsSession? _currentSession;
     private readonly List<AnalyticsCustomEvent> _currentCustomEvents = new();
+    private readonly List<AnalyticsFormEvent> _currentFormEvents = new();
+    private readonly List<AnalyticsFormFieldEvent> _currentFormFieldEvents = new();
 
     public AnalyticsEventReceipt? CurrentRequestReceipt => _currentReceipt;
 
@@ -28,6 +30,23 @@ internal sealed class AnalyticsEventStateStore
     /// </summary>
     public IReadOnlyList<AnalyticsCustomEvent> CurrentRequestCustomEvents =>
         _currentCustomEvents.AsReadOnly();
+
+    /// <summary>
+    /// Slice 005 — read-only view over the per-form lifecycle events
+    /// captured in the current request scope. Never null; empty list
+    /// at scope creation. Grows in append order as the handler invokes
+    /// <see cref="AppendFormEvent"/>.
+    /// </summary>
+    public IReadOnlyList<AnalyticsFormEvent> CurrentRequestFormEvents =>
+        _currentFormEvents.AsReadOnly();
+
+    /// <summary>
+    /// Slice 005 — read-only view over the per-field events captured
+    /// in the current request scope. Never null; empty list at scope
+    /// creation.
+    /// </summary>
+    public IReadOnlyList<AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents =>
+        _currentFormFieldEvents.AsReadOnly();
 
     public void SetCurrentReceipt(AnalyticsEventReceipt receipt)
     {
@@ -52,5 +71,29 @@ internal sealed class AnalyticsEventStateStore
     {
         ArgumentNullException.ThrowIfNull(customEvent);
         _currentCustomEvents.Add(customEvent);
+    }
+
+    /// <summary>
+    /// Slice 005 — record one form-lifecycle event captured in this
+    /// request scope. Called by
+    /// <c>AnalyzerFormEventCaptureHandler</c> after the row is
+    /// persisted. Single-threaded per scope (the controller runs on
+    /// the request thread); no locking required.
+    /// </summary>
+    public void AppendFormEvent(AnalyticsFormEvent formEvent)
+    {
+        ArgumentNullException.ThrowIfNull(formEvent);
+        _currentFormEvents.Add(formEvent);
+    }
+
+    /// <summary>
+    /// Slice 005 — record one field event captured in this request
+    /// scope. Called by
+    /// <c>AnalyzerFormFieldEventCaptureHandler</c> after persistence.
+    /// </summary>
+    public void AppendFormFieldEvent(AnalyticsFormFieldEvent fieldEvent)
+    {
+        ArgumentNullException.ThrowIfNull(fieldEvent);
+        _currentFormFieldEvents.Add(fieldEvent);
     }
 }

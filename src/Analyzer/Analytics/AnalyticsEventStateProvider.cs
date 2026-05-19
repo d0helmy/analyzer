@@ -20,4 +20,10 @@ internal sealed class AnalyticsEventStateProvider : IAnalyticsEventStateProvider
 
     public IReadOnlyList<AnalyticsCustomEvent> CurrentRequestCustomEvents =>
         _store.CurrentRequestCustomEvents;
+
+    public IReadOnlyList<AnalyticsFormEvent> CurrentRequestFormEvents =>
+        _store.CurrentRequestFormEvents;
+
+    public IReadOnlyList<AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents =>
+        _store.CurrentRequestFormFieldEvents;
 }
