@@ -14,6 +14,7 @@ import {
   FieldEventType,
   dispatchField,
 } from "./form-event-dispatcher";
+import { isFieldOptedOut } from "./opt-out-attribute";
 
 const FORM_KEY_ATTRIBUTE = "data-umbraco-form";
 const FIELD_KEY_ATTRIBUTE = "data-umbraco-field";
@@ -37,6 +38,10 @@ export function observeFieldsWithin(form: HTMLFormElement): void {
     (event) => {
       const target = event.target as HTMLElement | null;
       if (target === null) return;
+      // US3 — field-level `analyzer-no-tracking` short-circuits the
+      // capture without dispatching. Skip is observed per-field, not
+      // per-form (form-level opt-out is handled by form-observer).
+      if (isFieldOptedOut(target)) return;
       const fieldKey = resolveFieldKey(target);
       if (fieldKey === null) return;
       dispatchField({
@@ -54,6 +59,7 @@ export function observeFieldsWithin(form: HTMLFormElement): void {
     (event) => {
       const target = event.target as HTMLElement | null;
       if (target === null) return;
+      if (isFieldOptedOut(target)) return;
       const fieldKey = resolveFieldKey(target);
       if (fieldKey === null) return;
       const hadValue = readHasValue(target);

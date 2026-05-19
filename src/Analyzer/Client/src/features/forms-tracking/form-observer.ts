@@ -27,6 +27,7 @@ import {
   type LifecyclePayload,
 } from "./form-event-dispatcher";
 import { observeFieldsWithin } from "./field-observer";
+import { isFormOptedOut } from "./opt-out-attribute";
 
 const FORM_KEY_ATTRIBUTE = "data-umbraco-form";
 const CONTENT_KEY_ATTRIBUTE = "data-umbraco-form-page-id";
@@ -57,6 +58,12 @@ export function initialiseFormObserver(root: ParentNode = document): void {
 
 function observeForm(form: HTMLFormElement): void {
   if (form.dataset.analyzerObserved === "1") {
+    return;
+  }
+  // US3 — `analyzer-no-tracking` on the <form> element short-circuits
+  // every observer attach. Defence-in-depth: zero rows, zero POSTs.
+  if (isFormOptedOut(form)) {
+    form.dataset.analyzerObserved = "1";
     return;
   }
   const formKey = form.getAttribute(FORM_KEY_ATTRIBUTE);
