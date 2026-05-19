@@ -195,25 +195,29 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-Last shipped: slice 006 (scroll tracking) at `7a20451`. PR #26
-rebase-merged; 7 commits on top of slice 005 ending at the Polish
-commit. Adds the `analyzerScrollSample` table with unique index
-`UX_analyzerScrollSample_pageviewBucket` enforcing per-pageview-
-per-bucket idempotency at the DB layer (defence in depth alongside
-the client-side per-bucket Set), the
-`POST /umbraco/management/api/v1/analyzer/scroll-event/milestone`
-management endpoint, a client-side scroll observer in
-`src/Analyzer/Client/src/features/scroll-tracking/` (passive listener
-+ rAF coalescer + fixed-quartile bucket-crossing + short-page
-detection emitting Full on page-ready), and a sixth
-`IAnonymizationCascadeStep` registration (hard-delete). Reuses the
-`analyzer-no-tracking` attribute via a new shared predicate
-(`shared/opt-out-attribute.ts`; slice-005 imports re-export from
-shared). **No new package dependency**; no Customizer-side change
-required. Artifacts under
-[`specs/006-scroll-tracking/`](specs/006-scroll-tracking/).
+Slice 007 (search tracking) in flight on branch `007-search-tracking`.
+Spec + plan + research + data-model + 5 contracts + quickstart landed;
+tasks generation next. Adds the `analyzerSearchEvent` table (raw +
+normalised query columns + result count + visitor-bound `pageviewKey`,
+PII-tagged per `FR-SRC-04`), a new `IAnalyzerSearchQueryNormaliser`
+public extension point (first new Analyzer-defined surface since
+slice 001's `IVisitorIdentifier`) with default trim + NFKC +
+InvariantLower + whitespace-collapse implementation, the
+`POST /umbraco/management/api/v1/analyzer/search-event` management
+endpoint (strengthened with a visitor-bound `pageviewKey` check vs
+slice 006), a client-side `window.analyzer.sendSearch(query,
+resultCount)` helper in
+`src/Analyzer/Client/src/features/search-tracking/` (per-call opt-out
+evaluation; returns `Promise<{ eventKey } | { skipped: true }>`),
+and a seventh `IAnonymizationCascadeStep` registration (hard-delete,
+diverging from contract D8's re-key disposition — documented in spec
+Clarifications §2 for a post-merge contract amendment). Audit-log
+emits ActorUpn/Oid + EventKey + PageviewKey + ResultCount but
+**never** the query (PII redaction, SC-006). **No new package
+dependency**; no Customizer-side change required. Plan-time
+Constitution Check 10/10 PASS. Artifacts under
+[`specs/007-search-tracking/`](specs/007-search-tracking/).
 
-Slice 005 (forms tracking) shipped at `5e868ef`; slice 004 (custom
-events) at `bbc5b27`; cross-slice test-base FK-seeding fix merged
-at `8d57481`.
+Slice 006 (scroll tracking) shipped at `7a20451`; slice 005 (forms
+tracking) at `5e868ef`; slice 004 (custom events) at `bbc5b27`.
 <!-- SPECKIT END -->
