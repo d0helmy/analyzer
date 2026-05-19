@@ -144,10 +144,10 @@ Single project (RCL package per Constitution Tech Stack):
 
 **Independent Test**: Per quickstart §4 — add the "Analyzer Visitor ID" field to a form; submit as a known employee; verify the entry's value equals the visitor's key.
 
-- [ ] T061 [P] [US4] Field type: `src/Analyzer/Features/Forms/Infrastructure/UmbracoForms/AnalyzerVisitorIdField.cs` derived from `Umbraco.Forms.Core.Providers.FieldTypes.FieldType` per contracts/AnalyzerVisitorIdField.md. Stable Guid `00000005-0000-0000-0000-000000000001`. `RenderInputType = "hidden"`.
+- [X] T061 [P] [US4] Field type: `src/Analyzer/Features/Forms/Infrastructure/UmbracoForms/AnalyzerVisitorIdField.cs` derived from `Umbraco.Forms.Core.Providers.FieldTypes.FieldType` per contracts/AnalyzerVisitorIdField.md. Stable Guid `00000005-0000-0000-0000-000000000001`. `RenderInputType = "hidden"`.
 - [ ] T062 [P] [US4] Submission handler: `src/Analyzer/Features/Forms/Infrastructure/UmbracoForms/AnalyzerVisitorIdFieldSubmissionHandler.cs` implements `INotificationHandler<FormSubmittingNotification>`. Resolves `IVisitorIdentifier` from `IHttpContextAccessor`; writes Guid into `RecordField.Values[0]`; logs warning + writes `Guid.Empty` on misconfig.
-- [ ] T063 [P] [US4] Field type unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Infrastructure/AnalyzerVisitorIdFieldTests.cs` — field-type metadata (Id, Name, Icon, RenderInputType).
-- [ ] T064 [P] [US4] Handler unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Infrastructure/AnalyzerVisitorIdFieldSubmissionHandlerTests.cs` — 5 conformance items per contract (auto-discovery confirmation, value population, client-value overwrite, empty-on-misconfig, misconfig-warning emitted).
+- [X] T063 [P] [US4] Field type unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Infrastructure/AnalyzerVisitorIdFieldTests.cs` — field-type metadata (Id, Name, Icon, RenderInputType).
+- [X] T064 [P] [US4] Handler unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Infrastructure/AnalyzerVisitorIdFieldSubmissionHandlerTests.cs` — 5 conformance items per contract (auto-discovery confirmation, value population, client-value overwrite, empty-on-misconfig, misconfig-warning emitted).
 - [ ] T065 [US4] Composer: register `INotificationHandler<FormSubmittingNotification>` for `AnalyzerVisitorIdFieldSubmissionHandler` (Scoped). Field type itself auto-discovered by Umbraco Forms — no DI registration needed.
 - [ ] T066 [P] [US4] Integration test: `src/Analyzer.Tests/Integration/Forms/VisitorIdFieldSubmitTests.cs` — render a form with the Visitor ID field via the Host sample; submit as the unattended-install user; assert the Umbraco Forms entry's record-field value is the visitor's Guid.
 
