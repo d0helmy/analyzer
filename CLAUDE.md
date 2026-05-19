@@ -195,8 +195,20 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-**Slice 005 (Forms Tracking) — in flight on branch `005-forms-tracking`.**
-Spec + plan + research + data-model + contracts + quickstart landed; `/speckit-tasks` next. Adds 2 tables (`analyzerFormEvent` + `analyzerFormFieldEvent`), 2 cascade steps (hard-delete), 1 management endpoint (`/umbraco/management/api/v1/analyzer/form-event/{lifecycle,field}`), 1 Analyzer-owned Umbraco Forms field type (`AnalyzerVisitorIdField`), 1 client-bundle module wiring `IntersectionObserver` + `focus`/`blur`/`submit` listeners, `analyzer-no-tracking` opt-out attribute, and abandonment materialisation hooked into slice-003's sweeper. New package dep: Umbraco.Forms 17.x. Quickstart + 6 contracts under [`specs/005-forms-tracking/`](specs/005-forms-tracking/). Q1+Q2 resolved inline (Analyzer-owned field type; two tables); handoff note staged on customizer/main as `2b4f2f3`. No cross-product Customizer change required.
+Last shipped: slice 005 (forms tracking). Branch `005-forms-tracking`,
+7 commits on top of slice 004. Adds `analyzerFormEvent` +
+`analyzerFormFieldEvent` tables, the
+`POST /umbraco/management/api/v1/analyzer/form-event/{lifecycle,field}`
+management endpoints, `AnalyzerVisitorIdField` Umbraco Forms field
+type (auto-discovered; populates `customizerVisitorProfile.key` via
+`FieldType.ConvertToRecord`), `analyzer-no-tracking` opt-out
+attribute (client-side short-circuit), abandonment materialisation
+hooked into slice-003's `AnalyzerSessionSweeperService`, two new
+cascade-step registrations (fourth + fifth
+`IAnonymizationCascadeStep`). New package dep: Umbraco.Forms 17.x.
+Artifacts under [`specs/005-forms-tracking/`](specs/005-forms-tracking/).
+No cross-product Customizer change required.
 
-Last shipped: slice 004 (custom events) at `bbc5b27`. Slice 004 follow-ups (issue #20 FK seeding gap) merged at `8d57481`.
+Slice 004 (custom events) shipped at `bbc5b27`; cross-slice
+test-base FK-seeding fix merged at `8d57481`.
 <!-- SPECKIT END -->

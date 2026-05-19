@@ -19,10 +19,16 @@ namespace Analyzer.Tests.PublicSurface;
 /// <list type="bullet">
 ///   <item><c>Analyzer.Analytics</c> — hosts
 ///   <see cref="IAnalyticsEventStateProvider"/> +
-///   <see cref="AnalyticsEventReceipt"/>.</item>
+///   <see cref="AnalyticsEventReceipt"/> +
+///   <see cref="AnalyticsCustomEvent"/> +
+///   <see cref="AnalyticsFormEvent"/> +
+///   <see cref="AnalyticsFormFieldEvent"/>.</item>
 ///   <item><c>Analyzer.Features.Visitors.Application.Contracts</c> —
 ///   slice-001 <c>IVisitorIdentifier</c> + <c>VisitorIdentity</c>
 ///   (retroactively pinned per Clarifications Q3).</item>
+///   <item><c>Analyzer.Features.Forms.Infrastructure.UmbracoForms</c> —
+///   slice-005 <c>AnalyzerVisitorIdField</c> (consumed by host
+///   operators via Umbraco Forms' field-type designer).</item>
 /// </list>
 /// Regenerate the baseline ONLY when the change is deliberate and a
 /// semver bump is planned: set
@@ -34,6 +40,7 @@ public sealed class PublicSurfacePinningTests
     {
         "Analyzer.Analytics",
         "Analyzer.Features.Visitors.Application.Contracts",
+        "Analyzer.Features.Forms.Infrastructure.UmbracoForms",
     };
 
     private static readonly string SnapshotPath = LocateSnapshot();
