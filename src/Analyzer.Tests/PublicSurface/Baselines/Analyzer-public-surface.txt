@@ -92,6 +92,10 @@ TYPE Analyzer.Analytics.IAnalyticsEventStateProvider : interface : <>
   PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents { get; }
   PROP Analyzer.Analytics.AnalyticsEventReceipt CurrentRequestReceipt { get; }
   PROP Analyzer.Analytics.AnalyticsSession CurrentSession { get; }
+TYPE Analyzer.Features.Forms.Infrastructure.UmbracoForms.AnalyzerVisitorIdField : sealed class : base=Umbraco.Forms.Core.FieldType interfaces=[Umbraco.Forms.Core.Interfaces.IFieldType]
+  CTOR()
+  METHOD virtual System.Collections.Generic.IEnumerable<System.Object> ConvertToRecord(Umbraco.Forms.Core.Models.Field field, System.Collections.Generic.IEnumerable<System.Object> values, Microsoft.AspNetCore.Http.HttpContext httpContext)
+  FIELD static System.Guid FieldTypeId
 TYPE Analyzer.Features.Visitors.Application.Contracts.IVisitorIdentifier : interface : <>
   METHOD abstract Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity GetCurrent()
 TYPE Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity : struct : interfaces=[System.IEquatable`1[[Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
