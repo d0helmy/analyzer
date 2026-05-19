@@ -26,6 +26,7 @@ import {
   dispatchLifecycle,
   type LifecyclePayload,
 } from "./form-event-dispatcher";
+import { observeFieldsWithin } from "./field-observer";
 
 const FORM_KEY_ATTRIBUTE = "data-umbraco-form";
 const CONTENT_KEY_ATTRIBUTE = "data-umbraco-form-page-id";
@@ -122,6 +123,10 @@ function observeForm(form: HTMLFormElement): void {
     },
     { capture: true },
   );
+
+  // US2 — per-field focus / unfocus listeners (capture phase on
+  // the form so dynamically-added inputs are still seen).
+  observeFieldsWithin(form);
 
   // Success — submit. Client-side only; server-side rejection is
   // not propagated back to flip the row to Abandon (v1 limitation).

@@ -102,22 +102,22 @@ Single project (RCL package per Constitution Tech Stack):
 
 **Independent Test**: Per quickstart §2 — focus / blur fields with and without input; verify two field-event rows per cycle and `hadValue` accuracy. Confirm no field values appear in DB.
 
-- [ ] T041 [P] [US2] Repo interface: `src/Analyzer/Features/Forms/Infrastructure/Persistence/IAnalyzerFormFieldEventRepository.cs`.
-- [ ] T042 [US2] Repo impl: `src/Analyzer/Features/Forms/Infrastructure/Persistence/AnalyzerFormFieldEventRepository.cs` — `InsertAsync`, `DeleteByVisitorKeyAsync`.
+- [X] T041 [P] [US2] Repo interface: `src/Analyzer/Features/Forms/Infrastructure/Persistence/IAnalyzerFormFieldEventRepository.cs`.
+- [X] T042 [US2] Repo impl: `src/Analyzer/Features/Forms/Infrastructure/Persistence/AnalyzerFormFieldEventRepository.cs` — `InsertAsync`, `DeleteByVisitorKeyAsync`.
 - [ ] T043 [P] [US2] Repo unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Infrastructure/AnalyzerFormFieldEventRepositoryTests.cs`.
-- [ ] T044 [P] [US2] Handler interface: `src/Analyzer/Features/Forms/Application/IAnalyzerFormFieldEventCaptureHandler.cs`.
-- [ ] T045 [US2] Handler impl: `src/Analyzer/Features/Forms/Application/AnalyzerFormFieldEventCaptureHandler.cs`. Validates `HadValue` consistency with `EventType` (set only on FieldUnfocus); identity gate; session resolution via `SessionActivityKind.CustomEvent` (touches lastActivity).
-- [ ] T046 [P] [US2] Handler unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Application/AnalyzerFormFieldEventCaptureHandlerTests.cs` (5 conformance items + HadValue-on-Focus rejection).
-- [ ] T047 [P] [US2] Auditor: `src/Analyzer/Features/Forms/Application/IAnalyzerFormFieldEventAuditor.cs` + impl + tests. Log scope carries FieldKey + HadValue.
-- [ ] T048 [P] [US2] Controller route: extend `AnalyzerFormEventManagementController.cs` with the `/field` action accepting `AnalyzerFormFieldEventPayload`. Same Principle-VII gate.
-- [ ] T049 [P] [US2] Controller unit tests: extend `AnalyzerFormEventManagementControllerTests.cs` with FieldHappyPathReturns202, FieldRejectsHadValueOnFocus.
-- [ ] T050 [P] [US2] Cascade step (field table): `src/Analyzer/Features/Forms/Application/Anonymization/AnalyzerFormFieldEventCascadeStep.cs`.
-- [ ] T051 [P] [US2] Cascade step unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Application/AnalyzerFormFieldEventCascadeStepTests.cs`.
-- [ ] T052 [US2] Composer extension: register field-event repo / handler / auditor / cascade step in `AnalyzerFormsComposer.cs`.
-- [ ] T053 [P] [US2] Client module: `src/Analyzer/Client/src/features/forms-tracking/field-observer.ts` — focus / blur listeners attached per field via event capture phase. `hadValue = element.value.length > 0`.
-- [ ] T054 [US2] Wire field-observer into the forms-tracking module's `index.ts`.
-- [ ] T055 [P] [US2] Integration test: `src/Analyzer.Tests/Integration/Forms/FieldEventCaptureTests.cs` — focus/blur cycles + value-presence verification + zero-field-value-in-DB invariant (SC-003 column-shape audit).
-- [ ] T056 [P] [US2] Integration test: field-table cascade hard-delete + rollback — `src/Analyzer.Tests/Integration/Forms/FieldCascadeHardDeleteTests.cs` + `FieldCascadeRollbackTests.cs`.
+- [X] T044 [P] [US2] Handler interface: `src/Analyzer/Features/Forms/Application/IAnalyzerFormFieldEventCaptureHandler.cs`.
+- [X] T045 [US2] Handler impl: `src/Analyzer/Features/Forms/Application/AnalyzerFormFieldEventCaptureHandler.cs`. Validates `HadValue` consistency with `EventType` (set only on FieldUnfocus); identity gate; session resolution via `SessionActivityKind.CustomEvent` (touches lastActivity).
+- [X] T046 [P] [US2] Handler unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Application/AnalyzerFormFieldEventCaptureHandlerTests.cs` (5 conformance items + HadValue-on-Focus rejection).
+- [X] T047 [P] [US2] Auditor: `src/Analyzer/Features/Forms/Application/IAnalyzerFormFieldEventAuditor.cs` + impl + tests. Log scope carries FieldKey + HadValue.
+- [X] T048 [P] [US2] Controller route: extend `AnalyzerFormEventManagementController.cs` with the `/field` action accepting `AnalyzerFormFieldEventPayload`. Same Principle-VII gate.
+- [X] T049 [P] [US2] Controller unit tests: extend `AnalyzerFormEventManagementControllerTests.cs` with FieldHappyPathReturns202, FieldRejectsHadValueOnFocus.
+- [X] T050 [P] [US2] Cascade step (field table): `src/Analyzer/Features/Forms/Application/Anonymization/AnalyzerFormFieldEventCascadeStep.cs`.
+- [X] T051 [P] [US2] Cascade step unit tests: `src/Analyzer.Tests/Unit/Features/Forms/Application/AnalyzerFormFieldEventCascadeStepTests.cs`.
+- [X] T052 [US2] Composer extension: register field-event repo / handler / auditor / cascade step in `AnalyzerFormsComposer.cs`.
+- [X] T053 [P] [US2] Client module: `src/Analyzer/Client/src/features/forms-tracking/field-observer.ts` — focus / blur listeners attached per field via event capture phase. `hadValue = element.value.length > 0`.
+- [X] T054 [US2] Wire field-observer into the forms-tracking module's `index.ts`.
+- [X] T055 [P] [US2] Integration test: `src/Analyzer.Tests/Integration/Forms/FieldEventCaptureTests.cs` — focus/blur cycles + value-presence verification + zero-field-value-in-DB invariant (SC-003 column-shape audit).
+- [X] T056 [P] [US2] Integration test: field-table cascade hard-delete + rollback — `src/Analyzer.Tests/Integration/Forms/FieldCascadeHardDeleteTests.cs` + `FieldCascadeRollbackTests.cs`.
 
 **Checkpoint**: US2 layered on top of US1 MVP. Slice still independently shippable through US2.
 
