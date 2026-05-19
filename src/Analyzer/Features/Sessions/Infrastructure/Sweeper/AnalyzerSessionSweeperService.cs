@@ -1,3 +1,4 @@
+using Analyzer.Features.Forms.Application.Abandonment;
 using Analyzer.Features.Sessions.Application;
 using Analyzer.Features.Sessions.Infrastructure.Configuration;
 using Analyzer.Features.Sessions.Infrastructure.Persistence;
@@ -102,6 +103,21 @@ internal sealed class AnalyzerSessionSweeperService : BackgroundService
             {
                 _cacheStore.InvalidateBySessionKey(sessionKey);
             }
+
+            // Slice 005 — materialise Abandon rows for any
+            // (visitorKey, formKey, sessionKey) tuple with an open
+            // Start row in the just-closed batch. Same DI scope as
+            // the close-UPDATEs above so an exception rolls both
+            // sides back atomically. logicalCloseUtc is `now`: the
+            // session row's endUtc is `lastActivityUtc + inactivity`,
+            // but the abandonment instant (when we observe the user
+            // has stopped engaging) is now.
+            var materialiser = scope.ServiceProvider
+                .GetRequiredService<IAnalyzerFormAbandonmentMaterialiser>();
+            await materialiser
+                .MaterialiseAsync(closed, now, ct)
+                .ConfigureAwait(false);
+
             _logger.LogDebug(
                 "Analyzer session sweeper closed {Count} sessions",
                 closed.Count);
