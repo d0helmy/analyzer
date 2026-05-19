@@ -208,10 +208,16 @@ zero rows for that pageview.
 
 ## Assumptions
 
-- The pageview row has already been written by Customizer's pageview
-  middleware before the first scroll milestone fires, so
-  `pageviewKey` is resolvable via
-  `IAnalyticsStateProvider.CurrentRequest`.
+- The Customizer pageview middleware writes the pageview row AND emits
+  `pageviewKey` to the client (via a `<meta name="analyzer-pageview-key">`
+  tag or an inline `window.analyzer.pageviewKey = '...'` script populated
+  from `IAnalyticsStateProvider.CurrentRequest.PageviewKey` during the
+  Razor render — or via an equivalent injection from the host on a
+  headless frontend) BEFORE the first scroll milestone fires. The client
+  carries `pageviewKey` in every milestone POST payload; the management
+  controller does NOT re-resolve it from the request context (the request
+  context at POST time is the analyzer endpoint request, not the original
+  pageview request).
 - The session is already open from slice 003; scroll-milestone
   acceptance advances `lastActivityUtc` via the same path slice-005
   uses.

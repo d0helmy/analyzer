@@ -117,10 +117,11 @@ Single project (RCL package per Constitution Tech Stack):
 - [ ] T044 [P] Public-surface pinning baseline regeneration: re-run the pinning-baseline regenerator helper to include `Analyzer.Analytics.AnalyticsScrollSample`, `Analyzer.Analytics.AnalyzerScrollBucket`, and the new `IAnalyticsEventStateProvider.CurrentRequestScrollEvents` member. Diff MUST be additive only (no existing member removed/renamed). Update `src/Analyzer.Tests/PublicSurfacePinning/baseline.txt` (or equivalent).
 - [ ] T045 [P] Perf-smoke test: `src/Analyzer.Tests/Perf/ScrollEventCaptureLatencySmoke.cs` — 200 events/min sustained for 60 s synthetic load; assert P99 server-side persistence < 1 s (SC-001). `[Trait("Category", "Perf")]` opt-in trait (matches slice 002/003/004/005).
 - [ ] T046 [P] Perf-smoke test: `src/Analyzer.Tests/Perf/ScrollCascadeThroughputSmoke.cs` — insert 1 000 rows for one visitor; assert cascade-step DELETE completes in ≤ 200 ms (SC-004). `[Trait("Category", "Perf")]`.
-- [ ] T047 [P] Audit-log fidelity test: `src/Analyzer.Tests/Integration/Scroll/AuditLogFidelityTests.cs` — verify one structured log entry per accepted row (SC-007). Captures the log sink, drives N captures, asserts the count matches the row count and each entry carries `EventKey, PageviewKey, Bucket, ActorUpn, ReceivedUtc`.
-- [ ] T048 [P] Identity-gate test: `src/Analyzer.Tests/Integration/Scroll/IdentityGateTests.cs` — anonymous POST → 401; backoffice-auth POST with `IVisitorIdentifier.IsAvailable=false` → 403; both cases assert zero rows persisted + zero audit entries (SC-005).
-- [ ] T049 Run quickstart.md walkthrough end-to-end on a freshly-built Aspire AppHost. Documents the manual-verification pass (used by reviewers + future agents). Capture results in the PR description; if any step fails, file a follow-up issue and tag it `slice-006-followup`.
-- [ ] T050 Post-merge housekeeping (after PR merges to `main`): reset the CLAUDE.md SPECKIT block back to its "Last shipped" form pointing at slice 006 (`5e868ef` → new slice-006 head commit), matching the slice 002/003/004/005 cadence. Move project board #7 item for issue #25 (or its slice-006 equivalent) to Status=Done.
+- [ ] T047 [P] Perf-smoke test (client overhead): `src/Analyzer/Client/src/features/scroll-tracking/scroll-observer.fcp.test.ts` — Vitest with Playwright trace driving a synthetic 5 000 px-tall page; assert FCP delta with the scroll module loaded is ≤ 5 ms vs the slice-005 baseline (SC-006). If the Playwright trace harness is not yet wired into the existing Vitest config, prefer to gate this task on a one-task harness extension (T047a) and keep the assertion target intact. Trait/category opt-in matches the server-side perf-smoke pattern.
+- [ ] T048 [P] Audit-log fidelity test: `src/Analyzer.Tests/Integration/Scroll/AuditLogFidelityTests.cs` — verify one structured log entry per accepted row (SC-007). Captures the log sink, drives N captures, asserts the count matches the row count and each entry carries `EventKey, PageviewKey, Bucket, ActorUpn, ReceivedUtc`.
+- [ ] T049 [P] Identity-gate test: `src/Analyzer.Tests/Integration/Scroll/IdentityGateTests.cs` — anonymous POST → 401; backoffice-auth POST with `IVisitorIdentifier.IsAvailable=false` → 403; both cases assert zero rows persisted + zero audit entries (SC-005).
+- [ ] T050 Run quickstart.md walkthrough end-to-end on a freshly-built Aspire AppHost. Documents the manual-verification pass (used by reviewers + future agents). Capture results in the PR description; if any step fails, file a follow-up issue and tag it `slice-006-followup`.
+- [ ] T051 Post-merge housekeeping (after PR merges to `main`): reset the CLAUDE.md SPECKIT block back to its "Last shipped" form pointing at slice 006 (`5e868ef` → new slice-006 head commit), matching the slice 002/003/004/005 cadence. Move project board #7 item for issue #25 (or its slice-006 equivalent) to Status=Done.
 
 ---
 
@@ -201,9 +202,9 @@ T005 (migration plan chaining), T010-T011 (resolver enum + dispatch), T013 (stat
 3-commit push-through onto `006-scroll-tracking`:
 - **Commit A**: Foundational (T001-T014). One CI-green commit.
 - **Commit B**: US1 (T015-T038). One CI-green commit.
-- **Commit C**: US2 + Polish (T039-T050). One CI-green commit.
+- **Commit C**: US2 + Polish (T039-T051). One CI-green commit.
 
-Then `git push -u origin 006-scroll-tracking`, open PR, rebase-merge to `main` (squashing if requested by the user). Post-merge: T050 housekeeping.
+Then `git push -u origin 006-scroll-tracking`, open PR, rebase-merge to `main` (squashing if requested by the user). Post-merge: T051 housekeeping.
 
 ---
 
@@ -214,4 +215,4 @@ Then `git push -u origin 006-scroll-tracking`, open PR, rebase-merge to `main` (
 - Tests are written alongside their target file (slice-004/005 precedent — no strict TDD; harnesses already wired from slice 001).
 - Avoid same-file conflicts: T040 (slice-005 import update) MUST NOT race with any slice-005-edit task on `forms-tracking/index.ts`.
 - After every Phase, run the foundational regression gate (T014's pattern): `dotnet test --filter "Category!=Integration&Category!=Perf"` to ensure no slice-002/003/004/005 unit suite has regressed.
-- Slice envelope projection: 50 tasks across 5 phases — at the upper end of the plan's 35-50 estimate. Driver: defence-in-depth idempotency adds 1 extra exception type + repo unit case + integration test; the shared opt-out extraction adds 2 tasks not present in slices 002-005.
+- Slice envelope projection: 51 tasks across 5 phases — just above the plan's 35-50 estimate. Drivers: defence-in-depth idempotency adds 1 extra exception type + repo unit case + integration test; the shared opt-out extraction adds 2 tasks not present in slices 002-005; SC-006 FCP perf-smoke (T047, added post-`/speckit-analyze` remediation) closes the last coverage gap.
