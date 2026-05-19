@@ -17,6 +17,7 @@ internal sealed class AnalyticsEventStateStore
     private readonly List<AnalyticsFormEvent> _currentFormEvents = new();
     private readonly List<AnalyticsFormFieldEvent> _currentFormFieldEvents = new();
     private readonly List<AnalyticsScrollSample> _currentScrollEvents = new();
+    private readonly List<AnalyticsSearchEvent> _currentSearchEvents = new();
 
     public AnalyticsEventReceipt? CurrentRequestReceipt => _currentReceipt;
 
@@ -59,6 +60,19 @@ internal sealed class AnalyticsEventStateStore
     /// </summary>
     public IReadOnlyList<AnalyticsScrollSample> CurrentRequestScrollEvents =>
         _currentScrollEvents.AsReadOnly();
+
+    /// <summary>
+    /// Slice 007 — read-only view over the internal-search submissions
+    /// captured in the current request scope. Never null; empty list at
+    /// scope creation. Grows in append order as the handler invokes
+    /// <see cref="AppendSearchEvent"/> after a successful insert.
+    /// Unlike <see cref="CurrentRequestScrollEvents"/>, there is no
+    /// DB-side idempotency index — every accepted POST appends one row
+    /// (re-running the same query is a distinct engagement signal per
+    /// spec Edge Cases).
+    /// </summary>
+    public IReadOnlyList<AnalyticsSearchEvent> CurrentRequestSearchEvents =>
+        _currentSearchEvents.AsReadOnly();
 
     public void SetCurrentReceipt(AnalyticsEventReceipt receipt)
     {
@@ -121,5 +135,18 @@ internal sealed class AnalyticsEventStateStore
     {
         ArgumentNullException.ThrowIfNull(scrollEvent);
         _currentScrollEvents.Add(scrollEvent);
+    }
+
+    /// <summary>
+    /// Slice 007 — record one internal-search submission captured in
+    /// this request scope. Called by
+    /// <c>AnalyzerSearchEventCaptureHandler</c> after a successful
+    /// insert. Single-threaded per scope (the controller runs on the
+    /// request thread); no locking required.
+    /// </summary>
+    public void AppendSearchEvent(AnalyticsSearchEvent searchEvent)
+    {
+        ArgumentNullException.ThrowIfNull(searchEvent);
+        _currentSearchEvents.Add(searchEvent);
     }
 }

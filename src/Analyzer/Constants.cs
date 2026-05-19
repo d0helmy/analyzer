@@ -119,6 +119,22 @@ public static class Constants
         /// client-side per-bucket fire-once flag).
         /// </summary>
         public const string AnalyzerScrollSample = "analyzerScrollSample";
+
+        /// <summary>
+        /// Slice 007 — one row per accepted intranet-search submission
+        /// (raw + normalised query + result count) per
+        /// <c>(visitorKey, sessionKey, pageviewKey, contentKey)</c>.
+        /// Hard FKs to <c>customizerVisitorProfile(key)</c> and
+        /// <c>analyzerSession(sessionKey)</c>; soft FK to
+        /// <c>customizerPageview(key)</c> (tombstone-tolerant).
+        /// <b>PII tag (FR-SRC-04)</b>: <c>rawQuery</c> and
+        /// <c>normalisedQuery</c> are potentially personal data — never
+        /// logged via the structured-log substrate (the DB row is the
+        /// canonical, role-gated record), and the cascade step
+        /// hard-deletes rows on visitor anonymisation rather than
+        /// re-keying.
+        /// </summary>
+        public const string AnalyzerSearchEvent = "analyzerSearchEvent";
     }
 
     /// <summary>
@@ -156,6 +172,17 @@ public static class Constants
         /// rejects a same-tuple replay (409 idempotency path).
         /// </summary>
         public const string ScrollEventCapture = "scroll-event-capture";
+
+        /// <summary>
+        /// Slice 007 — emitted on every successful search-event capture
+        /// via the management endpoint (FR-009 / SC-006). The log entry
+        /// carries <c>EventKey</c> + <c>PageviewKey</c> + <c>ResultCount</c>
+        /// + <c>ActorUpn</c> + <c>ActorOid</c> + <c>ReceivedUtc</c> —
+        /// it MUST NOT include <c>RawQuery</c> or <c>NormalisedQuery</c>
+        /// (search queries are PII per FR-SRC-04). No 409 / duplicate
+        /// path: search events have no idempotency index.
+        /// </summary>
+        public const string SearchEventCapture = "search-event-capture";
     }
 
     /// <summary>

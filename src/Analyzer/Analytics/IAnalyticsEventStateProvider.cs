@@ -19,7 +19,7 @@ namespace Analyzer.Analytics;
 ///   <item>Slice 005 — <c>CurrentRequestFormEvents</c> +
 ///     <c>CurrentRequestFormFieldEvents</c>.</item>
 ///   <item>Slice 006 — <c>CurrentRequestScrollEvents</c>.</item>
-///   <item>Slice 007 — <c>CurrentVideoState</c>.</item>
+///   <item>Slice 007 — <c>CurrentRequestSearchEvents</c>.</item>
 /// </list>
 /// <para>
 /// Breaking changes to existing members are PROHIBITED outside MAJOR
@@ -113,4 +113,27 @@ public interface IAnalyticsEventStateProvider
     /// inserts).
     /// </remarks>
     IReadOnlyList<AnalyticsScrollSample> CurrentRequestScrollEvents { get; }
+
+    /// <summary>
+    /// Slice 007 — the internal-search submissions captured in the
+    /// current request scope. Empty list when none captured (never
+    /// null). Grows in append order as the handler invokes
+    /// <c>AppendSearchEvent</c> on a successful insert.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Search events have no idempotency unique index (unlike scroll
+    /// milestones) — re-submitting the same query is a distinct
+    /// engagement signal per spec Edge Cases. The list reflects every
+    /// row this request landed.
+    /// </para>
+    /// <para>
+    /// <b>PII notice (FR-SRC-04)</b>: <see cref="AnalyticsSearchEvent.RawQuery"/>
+    /// and <see cref="AnalyticsSearchEvent.NormalisedQuery"/> are
+    /// potentially personal data. In-process consumers reading from
+    /// this collection MUST honour the role-gating obligation
+    /// documented on <see cref="AnalyticsSearchEvent"/>.
+    /// </para>
+    /// </remarks>
+    IReadOnlyList<AnalyticsSearchEvent> CurrentRequestSearchEvents { get; }
 }

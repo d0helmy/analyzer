@@ -29,4 +29,7 @@ internal sealed class AnalyticsEventStateProvider : IAnalyticsEventStateProvider
 
     public IReadOnlyList<AnalyticsScrollSample> CurrentRequestScrollEvents =>
         _store.CurrentRequestScrollEvents;
+
+    public IReadOnlyList<AnalyticsSearchEvent> CurrentRequestSearchEvents =>
+        _store.CurrentRequestSearchEvents;
 }

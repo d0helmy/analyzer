@@ -31,4 +31,12 @@
     <ProjectReference Include="..\..\samples\Analyzer.Host\Analyzer.Host.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Slice 007 / T009 — 100-pair normaliser fixture loaded by
+         DefaultAnalyzerSearchQueryNormaliserTests (SC-002). -->
+    <None Update="Unit\Features\Search\Application\normaliser-fixture.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

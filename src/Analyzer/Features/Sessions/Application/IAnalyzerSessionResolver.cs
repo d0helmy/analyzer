@@ -106,6 +106,16 @@ internal enum SessionActivityKind
     /// <see cref="FormImpression"/> which is passive.
     /// </summary>
     ScrollEvent = 3,
+
+    /// <summary>
+    /// Slice 007 — internal search submission: visitor invoked
+    /// <c>analyzer.sendSearch(query, resultCount)</c>. Same semantic as
+    /// <see cref="CustomEvent"/> / <see cref="ScrollEvent"/> —
+    /// intentional engagement, <c>TouchAsync</c> advances
+    /// <c>lastActivityUtc</c> without incrementing
+    /// <c>pageviewCount</c>.
+    /// </summary>
+    SearchEvent = 4,
 }
 
 /// <summary>
