@@ -10,7 +10,8 @@ namespace Analyzer.Migrations;
 /// slice 005 appended
 /// <see cref="M0004_AddAnalyzerFormEventTable"/> +
 /// <see cref="M0005_AddAnalyzerFormFieldEventTable"/>; slice 006 appends
-/// <see cref="M0006_AddAnalyzerScrollSampleTable"/>. Plan-name
+/// <see cref="M0006_AddAnalyzerScrollSampleTable"/>; slice 007 appends
+/// <see cref="M0007_AddAnalyzerSearchEventTable"/>. Plan-name
 /// <c>"Analyzer"</c> keys the row in Umbraco's <c>umbracoKeyValue</c>
 /// migration-history table; it must remain stable across versions.
 /// </summary>
@@ -26,6 +27,7 @@ public sealed class AnalyzerMigrationPlan : MigrationPlan
             .To<M0003_AddAnalyzerCustomEventTable>("0003-AddAnalyzerCustomEventTable")
             .To<M0004_AddAnalyzerFormEventTable>("0004-AddAnalyzerFormEventTable")
             .To<M0005_AddAnalyzerFormFieldEventTable>("0005-AddAnalyzerFormFieldEventTable")
-            .To<M0006_AddAnalyzerScrollSampleTable>("0006-AddAnalyzerScrollSampleTable");
+            .To<M0006_AddAnalyzerScrollSampleTable>("0006-AddAnalyzerScrollSampleTable")
+            .To<M0007_AddAnalyzerSearchEventTable>("0007-AddAnalyzerSearchEventTable");
     }
 }

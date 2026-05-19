@@ -125,11 +125,13 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
         }
 
         if (activityKind == SessionActivityKind.CustomEvent
-            || activityKind == SessionActivityKind.ScrollEvent)
+            || activityKind == SessionActivityKind.ScrollEvent
+            || activityKind == SessionActivityKind.SearchEvent)
         {
             // Engagement flow (slice 004 custom events + slice 006
-            // scroll milestones): advance lastActivityUtc only; do NOT
-            // increment pageviewCount (Clarification §1). The repository's
+            // scroll milestones + slice 007 search events): advance
+            // lastActivityUtc only; do NOT increment pageviewCount
+            // (Clarification §1). The repository's
             // TouchAsync UPDATE is idempotent on already-closed rows;
             // if the sweeper closed the row between cache-read and
             // touch, the row stays closed and we fall through to open
