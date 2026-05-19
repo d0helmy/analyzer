@@ -195,12 +195,8 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-No slice currently in flight. Last shipped: slice 004 (custom events
-— `analyzerCustomEvent` table, `window.analyzer.send()` client API +
-management endpoint, `IAnalyzerSessionRepository.TouchAsync`,
-`IAnalyticsEventStateProvider.CurrentRequestCustomEvents`,
-`AnalyzerCustomEventCascadeStep` hard-delete on anonymisation, and
-the first Principle-VII-gated management surface in Analyzer) — see
-[`specs/004-custom-events/`](specs/004-custom-events/) for the
-artifacts. No cross-product Customizer prereq required.
+**Slice 005 (Forms Tracking) — in flight on branch `005-forms-tracking`.**
+Spec + plan + research + data-model + contracts + quickstart landed; `/speckit-tasks` next. Adds 2 tables (`analyzerFormEvent` + `analyzerFormFieldEvent`), 2 cascade steps (hard-delete), 1 management endpoint (`/umbraco/management/api/v1/analyzer/form-event/{lifecycle,field}`), 1 Analyzer-owned Umbraco Forms field type (`AnalyzerVisitorIdField`), 1 client-bundle module wiring `IntersectionObserver` + `focus`/`blur`/`submit` listeners, `analyzer-no-tracking` opt-out attribute, and abandonment materialisation hooked into slice-003's sweeper. New package dep: Umbraco.Forms 17.x. Quickstart + 6 contracts under [`specs/005-forms-tracking/`](specs/005-forms-tracking/). Q1+Q2 resolved inline (Analyzer-owned field type; two tables); handoff note staged on customizer/main as `2b4f2f3`. No cross-product Customizer change required.
+
+Last shipped: slice 004 (custom events) at `bbc5b27`. Slice 004 follow-ups (issue #20 FK seeding gap) merged at `8d57481`.
 <!-- SPECKIT END -->
