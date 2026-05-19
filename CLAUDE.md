@@ -195,26 +195,25 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-In flight: slice 006 (scroll tracking) — design stack landed. Branch
-`006-scroll-tracking` (1 commit ahead of main at spec, additional
-plan-stack commits forthcoming). Adds the `analyzerScrollSample`
-table (single-table; unique index `UX_analyzerScrollSample_pageviewBucket`
-enforces per-pageview-per-bucket idempotency), the
+Last shipped: slice 006 (scroll tracking) at `7a20451`. PR #26
+rebase-merged; 7 commits on top of slice 005 ending at the Polish
+commit. Adds the `analyzerScrollSample` table with unique index
+`UX_analyzerScrollSample_pageviewBucket` enforcing per-pageview-
+per-bucket idempotency at the DB layer (defence in depth alongside
+the client-side per-bucket Set), the
 `POST /umbraco/management/api/v1/analyzer/scroll-event/milestone`
 management endpoint, a client-side scroll observer in
 `src/Analyzer/Client/src/features/scroll-tracking/` (passive listener
-+ rAF throttle + fixed-quartile bucket-crossing detection), one new
-cascade-step registration (sixth `IAnonymizationCascadeStep`). Reuses
-the `analyzer-no-tracking` opt-out attribute and the `pageviewKey`
-plumbing from slice 005; **no new package dependency**; no Customizer-
-side change required. Design artifacts under
-[`specs/006-scroll-tracking/`](specs/006-scroll-tracking/) —
-[plan.md](specs/006-scroll-tracking/plan.md), research.md,
-data-model.md, 5 contracts, quickstart.md. Constitution Check 10/10
-PASS pre- and post-design. Estimated 35-50 tasks at `/speckit-tasks`
-time.
++ rAF coalescer + fixed-quartile bucket-crossing + short-page
+detection emitting Full on page-ready), and a sixth
+`IAnonymizationCascadeStep` registration (hard-delete). Reuses the
+`analyzer-no-tracking` attribute via a new shared predicate
+(`shared/opt-out-attribute.ts`; slice-005 imports re-export from
+shared). **No new package dependency**; no Customizer-side change
+required. Artifacts under
+[`specs/006-scroll-tracking/`](specs/006-scroll-tracking/).
 
-Last shipped: slice 005 (forms tracking) at `5e868ef`; slice 004
-(custom events) at `bbc5b27`; cross-slice test-base FK-seeding fix
-merged at `8d57481`.
+Slice 005 (forms tracking) shipped at `5e868ef`; slice 004 (custom
+events) at `bbc5b27`; cross-slice test-base FK-seeding fix merged
+at `8d57481`.
 <!-- SPECKIT END -->
