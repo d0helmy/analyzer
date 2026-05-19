@@ -12,6 +12,9 @@
 const LIFECYCLE_ENDPOINT =
   "/umbraco/management/api/v1/analyzer/form-event/lifecycle";
 
+const FIELD_ENDPOINT =
+  "/umbraco/management/api/v1/analyzer/form-event/field";
+
 const XSRF_COOKIE_NAME = "UMB-XSRF-TOKEN";
 const XSRF_HEADER_NAME = "X-UMB-XSRF-TOKEN";
 
@@ -36,8 +39,36 @@ export interface LifecycleResponse {
   eventKey: string;
 }
 
+export const FieldEventType = {
+  FieldFocus: 0,
+  FieldUnfocus: 1,
+} as const;
+
+export type FieldEventType = (typeof FieldEventType)[keyof typeof FieldEventType];
+
+export interface FieldPayload {
+  formKey: string;
+  fieldKey: string;
+  eventType: FieldEventType;
+  hadValue?: boolean | null;
+}
+
 export async function dispatchLifecycle(
   payload: LifecyclePayload,
+): Promise<LifecycleResponse | null> {
+  return dispatch(LIFECYCLE_ENDPOINT, payload, "lifecycle");
+}
+
+export async function dispatchField(
+  payload: FieldPayload,
+): Promise<LifecycleResponse | null> {
+  return dispatch(FIELD_ENDPOINT, payload, "field");
+}
+
+async function dispatch<T>(
+  endpoint: string,
+  payload: T,
+  label: string,
 ): Promise<LifecycleResponse | null> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -49,7 +80,7 @@ export async function dispatchLifecycle(
   }
 
   try {
-    const response = await fetch(LIFECYCLE_ENDPOINT, {
+    const response = await fetch(endpoint, {
       method: "POST",
       credentials: "same-origin",
       headers,
@@ -63,11 +94,11 @@ export async function dispatchLifecycle(
     // Fire-and-forget: don't reject the dispatcher promise — log + continue.
     // The host page must not break because Analyzer's capture failed.
     console.warn(
-      `[analyzer] form-event/lifecycle returned ${response.status} (eventType=${payload.eventType}; formKey=${payload.formKey})`,
+      `[analyzer] form-event/${label} returned ${response.status}`,
     );
     return null;
   } catch (err) {
-    console.warn("[analyzer] form-event/lifecycle dispatch failed", err);
+    console.warn(`[analyzer] form-event/${label} dispatch failed`, err);
     return null;
   }
 }

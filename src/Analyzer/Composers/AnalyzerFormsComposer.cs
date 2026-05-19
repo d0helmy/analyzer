@@ -52,5 +52,13 @@ public sealed class AnalyzerFormsComposer : IComposer
         builder.Services.AddScoped<
             IAnalyzerFormAbandonmentMaterialiser,
             AnalyzerFormAbandonmentMaterialiser>();
+
+        // Slice 005 US2 — field-level events.
+        builder.Services.AddScoped<IAnalyzerFormFieldEventRepository, AnalyzerFormFieldEventRepository>();
+        builder.Services.AddScoped<IAnalyzerFormFieldEventAuditor, AnalyzerFormFieldEventAuditor>();
+        builder.Services.AddScoped<IAnalyzerFormFieldEventCaptureHandler, AnalyzerFormFieldEventCaptureHandler>();
+
+        // Fifth IAnonymizationCascadeStep registration.
+        builder.Services.AddScoped<IAnonymizationCascadeStep, AnalyzerFormFieldEventCascadeStep>();
     }
 }

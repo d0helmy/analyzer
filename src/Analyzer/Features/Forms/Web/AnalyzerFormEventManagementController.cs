@@ -35,15 +35,18 @@ public sealed class AnalyzerFormEventManagementController : ControllerBase
 {
     private readonly IVisitorIdentifier _visitorIdentifier;
     private readonly IAnalyzerFormEventCaptureHandler _lifecycleHandler;
+    private readonly IAnalyzerFormFieldEventCaptureHandler _fieldHandler;
     private readonly TimeProvider _timeProvider;
 
     public AnalyzerFormEventManagementController(
         IVisitorIdentifier visitorIdentifier,
         IAnalyzerFormEventCaptureHandler lifecycleHandler,
+        IAnalyzerFormFieldEventCaptureHandler fieldHandler,
         TimeProvider timeProvider)
     {
         _visitorIdentifier = visitorIdentifier;
         _lifecycleHandler = lifecycleHandler;
+        _fieldHandler = fieldHandler;
         _timeProvider = timeProvider;
     }
 
@@ -80,6 +83,53 @@ public sealed class AnalyzerFormEventManagementController : ControllerBase
         try
         {
             var eventKey = await _lifecycleHandler
+                .HandleAsync(command, cancellationToken)
+                .ConfigureAwait(false);
+            return Accepted(new AnalyzerFormEventResponse { EventKey = eventKey });
+        }
+        catch (AnalyzerFormPayloadValidationException ex)
+        {
+            ModelState.AddModelError(ex.PropertyName, ex.Message);
+            return BadRequest(new ValidationProblemDetails(ModelState));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    [HttpPost("form-event/field")]
+    [ProducesResponseType<AnalyzerFormEventResponse>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Field(
+        [FromBody] AnalyzerFormFieldEventPayload payload,
+        CancellationToken cancellationToken)
+    {
+        var actor = _visitorIdentifier.GetCurrent();
+        if (!actor.IsAvailable || actor.Key == Guid.Empty)
+        {
+            return Unauthorized();
+        }
+
+        var userAgent = Request.Headers.UserAgent.ToString();
+        if (string.IsNullOrWhiteSpace(userAgent))
+        {
+            userAgent = null;
+        }
+
+        var command = new AnalyzerFormFieldEventCapture(
+            Actor: actor,
+            FormKey: payload.FormKey,
+            FieldKey: payload.FieldKey,
+            EventType: payload.EventType,
+            HadValue: payload.HadValue,
+            UserAgent: userAgent,
+            ReceivedUtc: _timeProvider.GetUtcNow());
+
+        try
+        {
+            var eventKey = await _fieldHandler
                 .HandleAsync(command, cancellationToken)
                 .ConfigureAwait(false);
             return Accepted(new AnalyzerFormEventResponse { EventKey = eventKey });

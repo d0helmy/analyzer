@@ -124,12 +124,94 @@ public sealed class AnalyzerFormEventManagementControllerTests
             .Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
+    [Fact]
+    public async Task FieldHappyPathReturns202()
+    {
+        var visitor = Guid.NewGuid();
+        var expectedEventKey = Guid.NewGuid();
+        var fieldHandler = new FakeFieldHandler { NextEventKey = expectedEventKey };
+        var controller = NewController(
+            new StubVisitorIdentifier(NewIdentity(visitor)),
+            new FakeHandler(),
+            fieldHandler);
+
+        var formKey = Guid.NewGuid();
+        var fieldKey = Guid.NewGuid();
+        var result = await controller.Field(
+            new AnalyzerFormFieldEventPayload
+            {
+                FormKey = formKey,
+                FieldKey = fieldKey,
+                EventType = AnalyzerFormFieldEventType.FieldFocus,
+                HadValue = null,
+            },
+            TestContext.Current.CancellationToken);
+
+        result.Should().BeOfType<AcceptedResult>();
+        var body = ((AcceptedResult)result).Value
+            .Should().BeOfType<AnalyzerFormEventResponse>().Subject;
+        body.EventKey.Should().Be(expectedEventKey);
+        fieldHandler.CallCount.Should().Be(1);
+        fieldHandler.LastCommand!.FieldKey.Should().Be(fieldKey);
+    }
+
+    [Fact]
+    public async Task FieldRejectsHadValueOnFocus()
+    {
+        var fieldHandler = new FakeFieldHandler
+        {
+            Throw = new AnalyzerFormPayloadValidationException(
+                nameof(AnalyzerFormFieldEventPayload.HadValue),
+                "FieldFocus rows must not carry hadValue."),
+        };
+        var controller = NewController(
+            new StubVisitorIdentifier(NewIdentity(Guid.NewGuid())),
+            new FakeHandler(),
+            fieldHandler);
+
+        var result = await controller.Field(
+            new AnalyzerFormFieldEventPayload
+            {
+                FormKey = Guid.NewGuid(),
+                FieldKey = Guid.NewGuid(),
+                EventType = AnalyzerFormFieldEventType.FieldFocus,
+                HadValue = true,
+            },
+            TestContext.Current.CancellationToken);
+
+        result.Should().BeAssignableTo<ObjectResult>()
+            .Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task FieldUnavailableActorReturns401()
+    {
+        var fieldHandler = new FakeFieldHandler();
+        var controller = NewController(
+            new StubVisitorIdentifier(default),
+            new FakeHandler(),
+            fieldHandler);
+
+        var result = await controller.Field(
+            new AnalyzerFormFieldEventPayload
+            {
+                FormKey = Guid.NewGuid(),
+                FieldKey = Guid.NewGuid(),
+                EventType = AnalyzerFormFieldEventType.FieldFocus,
+            },
+            TestContext.Current.CancellationToken);
+
+        result.Should().BeOfType<UnauthorizedResult>();
+        fieldHandler.CallCount.Should().Be(0);
+    }
+
     private static AnalyzerFormEventManagementController NewController(
         IVisitorIdentifier identifier,
-        IAnalyzerFormEventCaptureHandler handler)
+        IAnalyzerFormEventCaptureHandler handler,
+        IAnalyzerFormFieldEventCaptureHandler? fieldHandler = null)
     {
         var controller = new AnalyzerFormEventManagementController(
-            identifier, handler, new FixedClock(T0));
+            identifier, handler, fieldHandler ?? new FakeFieldHandler(), new FixedClock(T0));
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext(),
@@ -156,6 +238,25 @@ public sealed class AnalyzerFormEventManagementControllerTests
         public Exception? Throw { get; set; }
 
         public Task<Guid> HandleAsync(AnalyzerFormEventCapture command, CancellationToken ct)
+        {
+            CallCount++;
+            LastCommand = command;
+            if (Throw is not null)
+            {
+                throw Throw;
+            }
+            return Task.FromResult(NextEventKey);
+        }
+    }
+
+    private sealed class FakeFieldHandler : IAnalyzerFormFieldEventCaptureHandler
+    {
+        public int CallCount { get; private set; }
+        public AnalyzerFormFieldEventCapture? LastCommand { get; private set; }
+        public Guid NextEventKey { get; set; } = Guid.NewGuid();
+        public Exception? Throw { get; set; }
+
+        public Task<Guid> HandleAsync(AnalyzerFormFieldEventCapture command, CancellationToken ct)
         {
             CallCount++;
             LastCommand = command;
