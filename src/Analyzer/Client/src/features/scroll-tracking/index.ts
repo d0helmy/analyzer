@@ -6,10 +6,13 @@
 // `IAnalyticsStateProvider.CurrentRequest` during the original page
 // render (research §R6).
 //
-// US2 will layer the `analyzer-no-tracking` opt-out short-circuit
-// on top of this entry point (slice-005 attribute, shared predicate
-// extracted in T039-T041).
+// US2: at init time, checks `analyzer-no-tracking` on `<html>` or
+// `<body>` via the shared predicate. Presence short-circuits — no
+// scroll listener installed, no fetch fired. Dynamic attribute
+// changes after init do NOT retroactively stop in-flight capture
+// (spec US2 AS2 — documented v1 behaviour).
 
+import { isDocumentOptedOut } from "../../shared/opt-out-attribute";
 import { startScrollObserver } from "./scroll-observer";
 
 interface AnalyzerScrollGlobals {
@@ -33,6 +36,10 @@ export function initialiseScrollTracking(): void {
 }
 
 function resolveAndStart(): void {
+  // US2 opt-out — read at init time only; documented v1 behaviour.
+  if (isDocumentOptedOut()) {
+    return;
+  }
   const globalAny = globalThis as Record<string, unknown>;
   const ns = globalAny.analyzer as AnalyzerScrollGlobals | undefined;
   const pageviewKey = ns?.pageviewKey ?? "";

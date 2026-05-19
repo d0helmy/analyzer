@@ -61,6 +61,21 @@ TYPE Analyzer.Analytics.AnalyticsFormFieldEvent : sealed class : interfaces=[Sys
   METHOD virtual System.Boolean Equals(System.Object obj)
   METHOD virtual System.Int32 GetHashCode()
   METHOD virtual System.String ToString()
+TYPE Analyzer.Analytics.AnalyticsScrollSample : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsScrollSample, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR(System.Guid EventKey, System.Guid VisitorProfileKey, System.Nullable<System.Guid> SessionKey, System.Guid PageviewKey, System.Guid ContentKey, Analyzer.Analytics.AnalyzerScrollBucket Bucket, System.DateTimeOffset ReceivedUtc)
+  PROP Analyzer.Analytics.AnalyzerScrollBucket Bucket { get; set; }
+  PROP System.Guid ContentKey { get; set; }
+  PROP System.Guid EventKey { get; set; }
+  PROP System.Guid PageviewKey { get; set; }
+  PROP System.DateTimeOffset ReceivedUtc { get; set; }
+  PROP System.Nullable<System.Guid> SessionKey { get; set; }
+  PROP System.Guid VisitorProfileKey { get; set; }
+  METHOD Analyzer.Analytics.AnalyticsScrollSample <Clone>$()
+  METHOD System.Void Deconstruct(System.Guid& EventKey, System.Guid& VisitorProfileKey, System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& SessionKey, System.Guid& PageviewKey, System.Guid& ContentKey, Analyzer.Analytics.AnalyzerScrollBucket& Bucket, System.DateTimeOffset& ReceivedUtc)
+  METHOD virtual System.Boolean Equals(Analyzer.Analytics.AnalyticsScrollSample other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()
 TYPE Analyzer.Analytics.AnalyticsSession : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsSession, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
   CTOR(System.Guid SessionKey, System.Guid VisitorProfileKey, System.DateTimeOffset StartUtc, System.DateTimeOffset LastActivityUtc, System.Nullable<System.DateTimeOffset> EndUtc, System.Int32 PageviewCount, System.Boolean IsActive)
   PROP System.Nullable<System.DateTimeOffset> EndUtc { get; set; }
@@ -86,11 +101,18 @@ TYPE Analyzer.Analytics.AnalyzerFormFieldEventType : enum : interfaces=[System.I
   FIELD static Analyzer.Analytics.AnalyzerFormFieldEventType FieldFocus
   FIELD static Analyzer.Analytics.AnalyzerFormFieldEventType FieldUnfocus
   FIELD System.Byte value__
+TYPE Analyzer.Analytics.AnalyzerScrollBucket : enum : interfaces=[System.IComparable,System.IConvertible,System.IFormattable,System.ISpanFormattable]
+  FIELD static Analyzer.Analytics.AnalyzerScrollBucket Full
+  FIELD static Analyzer.Analytics.AnalyzerScrollBucket Half
+  FIELD static Analyzer.Analytics.AnalyzerScrollBucket Quarter
+  FIELD static Analyzer.Analytics.AnalyzerScrollBucket ThreeQuarters
+  FIELD System.Byte value__
 TYPE Analyzer.Analytics.IAnalyticsEventStateProvider : interface : <>
   PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsCustomEvent> CurrentRequestCustomEvents { get; }
   PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsFormEvent> CurrentRequestFormEvents { get; }
   PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents { get; }
   PROP Analyzer.Analytics.AnalyticsEventReceipt CurrentRequestReceipt { get; }
+  PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsScrollSample> CurrentRequestScrollEvents { get; }
   PROP Analyzer.Analytics.AnalyticsSession CurrentSession { get; }
 TYPE Analyzer.Features.Forms.Infrastructure.UmbracoForms.AnalyzerVisitorIdField : sealed class : base=Umbraco.Forms.Core.FieldType interfaces=[Umbraco.Forms.Core.Interfaces.IFieldType]
   CTOR()
