@@ -245,7 +245,7 @@ Analyzer registers cascade steps for each Analyzer-owned table:
 - `analyzerFormsEvent` — re-key
 - `analyzerSession` — re-key
 - `analyzerScrollSample` — re-key
-- `analyzerSearchEvent` — re-key
+- `analyzerSearchEvent` — **hard-delete** (slice 007; PII per FR-SRC-04 — re-keying would retain the literal `rawQuery` + `normalisedQuery` strings attached to a pseudonymous identifier, so the right-to-delete duty applies to the row entirely. Authorised by Principle IV v1.1.1's participation-pattern menu.)
 - Plus any side tables FK'd to visitor
 
 Each is a small composer registration. Analyzer's anonymisation

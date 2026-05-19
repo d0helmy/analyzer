@@ -76,6 +76,22 @@ TYPE Analyzer.Analytics.AnalyticsScrollSample : sealed class : interfaces=[Syste
   METHOD virtual System.Boolean Equals(System.Object obj)
   METHOD virtual System.Int32 GetHashCode()
   METHOD virtual System.String ToString()
+TYPE Analyzer.Analytics.AnalyticsSearchEvent : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsSearchEvent, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR()
+  PROP System.Guid ContentKey { get; set; }
+  PROP System.Guid EventKey { get; set; }
+  PROP System.String NormalisedQuery { get; set; }
+  PROP System.Guid PageviewKey { get; set; }
+  PROP System.String RawQuery { get; set; }
+  PROP System.DateTimeOffset ReceivedUtc { get; set; }
+  PROP System.Int32 ResultCount { get; set; }
+  PROP System.Guid SessionKey { get; set; }
+  PROP System.Guid VisitorProfileKey { get; set; }
+  METHOD Analyzer.Analytics.AnalyticsSearchEvent <Clone>$()
+  METHOD virtual System.Boolean Equals(Analyzer.Analytics.AnalyticsSearchEvent other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()
 TYPE Analyzer.Analytics.AnalyticsSession : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsSession, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
   CTOR(System.Guid SessionKey, System.Guid VisitorProfileKey, System.DateTimeOffset StartUtc, System.DateTimeOffset LastActivityUtc, System.Nullable<System.DateTimeOffset> EndUtc, System.Int32 PageviewCount, System.Boolean IsActive)
   PROP System.Nullable<System.DateTimeOffset> EndUtc { get; set; }
@@ -113,7 +129,10 @@ TYPE Analyzer.Analytics.IAnalyticsEventStateProvider : interface : <>
   PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents { get; }
   PROP Analyzer.Analytics.AnalyticsEventReceipt CurrentRequestReceipt { get; }
   PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsScrollSample> CurrentRequestScrollEvents { get; }
+  PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsSearchEvent> CurrentRequestSearchEvents { get; }
   PROP Analyzer.Analytics.AnalyticsSession CurrentSession { get; }
+TYPE Analyzer.Analytics.IAnalyzerSearchQueryNormaliser : interface : <>
+  METHOD abstract System.String Normalise(System.String rawQuery)
 TYPE Analyzer.Features.Forms.Infrastructure.UmbracoForms.AnalyzerVisitorIdField : sealed class : base=Umbraco.Forms.Core.FieldType interfaces=[Umbraco.Forms.Core.Interfaces.IFieldType]
   CTOR()
   METHOD virtual System.Collections.Generic.IEnumerable<System.Object> ConvertToRecord(Umbraco.Forms.Core.Models.Field field, System.Collections.Generic.IEnumerable<System.Object> values, Microsoft.AspNetCore.Http.HttpContext httpContext)
