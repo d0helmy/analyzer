@@ -106,6 +106,19 @@ public static class Constants
         /// the user typed.
         /// </summary>
         public const string AnalyzerFormFieldEvent = "analyzerFormFieldEvent";
+
+        /// <summary>
+        /// Slice 006 — one row per scroll-depth milestone crossing
+        /// (25 / 50 / 75 / 100 %) per <c>(visitorKey, pageviewKey,
+        /// contentKey, bucket)</c>. Hard FK to
+        /// <c>customizerVisitorProfile(key)</c>; soft FKs to
+        /// <c>customizerPageview(key)</c> and
+        /// <c>analyzerSession(sessionKey)</c>. Unique index on
+        /// <c>(pageviewKey, bucket)</c> enforces per-pageview-per-bucket
+        /// idempotency at the DB layer (defence in depth alongside the
+        /// client-side per-bucket fire-once flag).
+        /// </summary>
+        public const string AnalyzerScrollSample = "analyzerScrollSample";
     }
 
     /// <summary>
@@ -134,6 +147,15 @@ public static class Constants
         /// (<c>FieldFocus</c> / <c>FieldUnfocus</c>).
         /// </summary>
         public const string FormFieldEventCapture = "form-field-event-capture";
+
+        /// <summary>
+        /// Slice 006 — emitted on every successful scroll-milestone
+        /// capture via the management endpoint (FR-006). A second
+        /// <c>Duplicate</c>-tagged entry is emitted when the
+        /// <c>UX_analyzerScrollSample_pageviewBucket</c> unique index
+        /// rejects a same-tuple replay (409 idempotency path).
+        /// </summary>
+        public const string ScrollEventCapture = "scroll-event-capture";
     }
 
     /// <summary>

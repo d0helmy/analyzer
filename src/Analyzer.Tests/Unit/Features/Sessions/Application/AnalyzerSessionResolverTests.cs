@@ -42,6 +42,35 @@ public sealed class AnalyzerSessionResolverTests
     }
 
     [Fact]
+    public async Task Cache_hit_fresh_ScrollEvent_touches_instead_of_extends()
+    {
+        // Slice 006 / T011 — SessionActivityKind.ScrollEvent must
+        // dispatch to TouchAsync (intentional engagement, matches
+        // CustomEvent semantics) NOT ExtendAsync. Crossing a scroll
+        // milestone is engagement; it keeps the session alive but
+        // must not inflate pageviewCount.
+        var visitor = Guid.NewGuid();
+        var sessionKey = Guid.NewGuid();
+        var repo = new FakeRepository();
+        var (resolver, cache) = NewResolver(repo);
+
+        cache.Set(visitor, DeviceKeyHasher.Compute("UA"),
+            new AnalyticsSessionCacheEntry(sessionKey, T0, T0, 1));
+
+        var result = await resolver.ResolveAsync(
+            visitor, "UA", T0.AddMinutes(5), SessionActivityKind.ScrollEvent, TestContext.Current.CancellationToken);
+
+        result.SessionKey.Should().Be(sessionKey);
+        result.Projection.LastActivityUtc.Should().Be(T0.AddMinutes(5));
+        result.Projection.PageviewCount.Should().Be(1, "scroll-event flow must NOT increment pageviewCount");
+        repo.TouchCalls.Should().Be(1);
+        repo.LastTouchSessionKey.Should().Be(sessionKey);
+        repo.LastTouchLastActivityUtc.Should().Be(T0.AddMinutes(5));
+        repo.ExtendCalls.Should().Be(0);
+        repo.InsertCalls.Should().Be(0);
+    }
+
+    [Fact]
     public async Task Cache_hit_fresh_extends_via_repo()
     {
         var visitor = Guid.NewGuid();

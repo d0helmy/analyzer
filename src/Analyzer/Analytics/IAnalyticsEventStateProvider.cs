@@ -18,6 +18,7 @@ namespace Analyzer.Analytics;
 ///   <item>Slice 004 — <c>CurrentRequestCustomEvents</c>.</item>
 ///   <item>Slice 005 — <c>CurrentRequestFormEvents</c> +
 ///     <c>CurrentRequestFormFieldEvents</c>.</item>
+///   <item>Slice 006 — <c>CurrentRequestScrollEvents</c>.</item>
 ///   <item>Slice 007 — <c>CurrentVideoState</c>.</item>
 /// </list>
 /// <para>
@@ -94,4 +95,22 @@ public interface IAnalyticsEventStateProvider
     /// (never null).
     /// </summary>
     IReadOnlyList<AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents { get; }
+
+    /// <summary>
+    /// Slice 006 — the scroll-milestone events
+    /// (<see cref="AnalyzerScrollBucket.Quarter"/> /
+    /// <see cref="AnalyzerScrollBucket.Half"/> /
+    /// <see cref="AnalyzerScrollBucket.ThreeQuarters"/> /
+    /// <see cref="AnalyzerScrollBucket.Full"/>) captured in the current
+    /// request scope. Empty list when none captured (never null).
+    /// </summary>
+    /// <remarks>
+    /// DB unique index <c>UX_analyzerScrollSample_pageviewBucket</c>
+    /// on <c>(pageviewKey, bucket)</c> ensures the captured list
+    /// contains at most one entry per bucket per pageview; duplicates
+    /// from a buggy client are rejected at the storage layer with a
+    /// 409 idempotency response (the list reflects only successful
+    /// inserts).
+    /// </remarks>
+    IReadOnlyList<AnalyticsScrollSample> CurrentRequestScrollEvents { get; }
 }

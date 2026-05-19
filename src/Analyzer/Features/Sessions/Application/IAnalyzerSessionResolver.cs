@@ -96,6 +96,16 @@ internal enum SessionActivityKind
     /// not keep a session alive past the inactivity timeout.
     /// </summary>
     FormImpression = 2,
+
+    /// <summary>
+    /// Slice 006 — scroll-depth milestone crossing: visitor reached
+    /// a 25 / 50 / 75 / 100 % depth bucket. Same semantic as
+    /// <see cref="CustomEvent"/> — intentional engagement,
+    /// <c>TouchAsync</c> advances <c>lastActivityUtc</c> without
+    /// incrementing <c>pageviewCount</c>. Distinct from
+    /// <see cref="FormImpression"/> which is passive.
+    /// </summary>
+    ScrollEvent = 3,
 }
 
 /// <summary>

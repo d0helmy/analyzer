@@ -16,6 +16,7 @@ internal sealed class AnalyticsEventStateStore
     private readonly List<AnalyticsCustomEvent> _currentCustomEvents = new();
     private readonly List<AnalyticsFormEvent> _currentFormEvents = new();
     private readonly List<AnalyticsFormFieldEvent> _currentFormFieldEvents = new();
+    private readonly List<AnalyticsScrollSample> _currentScrollEvents = new();
 
     public AnalyticsEventReceipt? CurrentRequestReceipt => _currentReceipt;
 
@@ -47,6 +48,17 @@ internal sealed class AnalyticsEventStateStore
     /// </summary>
     public IReadOnlyList<AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents =>
         _currentFormFieldEvents.AsReadOnly();
+
+    /// <summary>
+    /// Slice 006 — read-only view over the scroll-milestone events
+    /// captured in the current request scope. Never null; empty list
+    /// at scope creation. Grows in append order as the handler invokes
+    /// <see cref="AppendScrollEvent"/>; the DB unique index
+    /// <c>UX_analyzerScrollSample_pageviewBucket</c> ensures at most
+    /// one entry per <c>(pageview, bucket)</c> tuple per request.
+    /// </summary>
+    public IReadOnlyList<AnalyticsScrollSample> CurrentRequestScrollEvents =>
+        _currentScrollEvents.AsReadOnly();
 
     public void SetCurrentReceipt(AnalyticsEventReceipt receipt)
     {
@@ -95,5 +107,19 @@ internal sealed class AnalyticsEventStateStore
     {
         ArgumentNullException.ThrowIfNull(fieldEvent);
         _currentFormFieldEvents.Add(fieldEvent);
+    }
+
+    /// <summary>
+    /// Slice 006 — record one scroll-milestone event captured in this
+    /// request scope. Called by
+    /// <c>AnalyzerScrollEventCaptureHandler</c> after a successful
+    /// insert (NOT on the 409 duplicate path — the duplicate audit
+    /// is emitted but the state store stays untouched, since no row
+    /// landed for this request).
+    /// </summary>
+    public void AppendScrollEvent(AnalyticsScrollSample scrollEvent)
+    {
+        ArgumentNullException.ThrowIfNull(scrollEvent);
+        _currentScrollEvents.Add(scrollEvent);
     }
 }
