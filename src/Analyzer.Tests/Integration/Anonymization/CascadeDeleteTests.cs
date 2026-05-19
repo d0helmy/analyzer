@@ -20,6 +20,8 @@ public sealed class CascadeDeleteTests : AnalyzerIntegrationTestBase
     {
         var visitorA = Guid.NewGuid();
         var visitorB = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorA);
+        await SeedVisitorProfileAsync(visitorB);
         await SeedReceiptsAsync(visitorA, count: 3);
         await SeedReceiptsAsync(visitorB, count: 2);
 
@@ -33,6 +35,7 @@ public sealed class CascadeDeleteTests : AnalyzerIntegrationTestBase
     public async Task PostAnonymisationCountIsZero()
     {
         var visitorKey = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorKey);
         await SeedReceiptsAsync(visitorKey, count: 5);
 
         await RunCascadeForAsync(visitorKey);
@@ -44,6 +47,7 @@ public sealed class CascadeDeleteTests : AnalyzerIntegrationTestBase
     public async Task CompletesUnderTwoHundredMsForTenThousandRows()
     {
         var visitorKey = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorKey);
         await SeedReceiptsAsync(visitorKey, count: 10_000);
 
         var sw = System.Diagnostics.Stopwatch.StartNew();

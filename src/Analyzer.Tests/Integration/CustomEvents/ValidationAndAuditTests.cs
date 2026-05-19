@@ -66,6 +66,7 @@ public sealed class ValidationAndAuditTests : AnalyzerIntegrationTestBase
         // is the last step in the handler orchestration) and capture
         // emissions via a custom logger provider plugged into DI.
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var ct = TestContext.Current.CancellationToken;
 
         var capture = new CaptureAuditor();

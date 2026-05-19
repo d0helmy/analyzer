@@ -23,6 +23,7 @@ public sealed class CascadeRollbackTests : AnalyzerIntegrationTestBase
     public async Task Throw_after_custom_event_step_rolls_back_the_delete()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var ct = TestContext.Current.CancellationToken;
         await SeedCustomEventsAsync(visitor, count: 3, ct);
         Count(visitor).Should().Be(3);

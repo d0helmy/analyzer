@@ -22,6 +22,7 @@ public sealed class LazyCloseSessionTests : AnalyzerIntegrationTestBase
     public async Task Capture_after_inactivity_window_opens_new_session()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var actor = new VisitorIdentity(true, visitor, "oid-1", "user@example.com", false);
         var ct = TestContext.Current.CancellationToken;
 

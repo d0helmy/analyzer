@@ -32,6 +32,7 @@ public sealed class EndToEndCaptureTests : AnalyzerIntegrationTestBase
     public async Task N_captures_for_one_visitor_persist_N_rows_under_same_session(int n)
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var actor = NewIdentity(visitor);
         var ct = TestContext.Current.CancellationToken;
 
@@ -67,6 +68,8 @@ public sealed class EndToEndCaptureTests : AnalyzerIntegrationTestBase
     {
         var visitorA = Guid.NewGuid();
         var visitorB = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorA);
+        await SeedVisitorProfileAsync(visitorB);
         var ct = TestContext.Current.CancellationToken;
 
         await CaptureAsync(visitorA, ct);

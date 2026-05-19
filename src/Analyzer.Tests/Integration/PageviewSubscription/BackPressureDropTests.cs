@@ -21,7 +21,9 @@ public sealed class BackPressureDropTests : AnalyzerIntegrationTestBase
     [Fact]
     public async Task NotificationWithAbsentParentPageviewWritesReceipt()
     {
-        var pageview = NewPageview(Guid.NewGuid(), Guid.NewGuid());
+        var visitorKey = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorKey);
+        var pageview = NewPageview(Guid.NewGuid(), visitorKey);
         var aggregator = Services.GetRequiredService<IEventAggregator>();
 
         // Publish directly — bypasses PageviewCaptureMiddleware, which

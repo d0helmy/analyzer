@@ -24,6 +24,7 @@ public sealed class CascadeRollbackTests : AnalyzerIntegrationTestBase
     public async Task ThrowAfterAnalyzerStepRollsBackTheDelete()
     {
         var visitorKey = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorKey);
         await SeedReceiptsAsync(visitorKey, count: 4);
         CountFor(visitorKey).Should().Be(4);
 

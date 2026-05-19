@@ -24,6 +24,8 @@ public sealed class CascadeHardDeleteTests : AnalyzerIntegrationTestBase
     {
         var visitorA = Guid.NewGuid();
         var visitorB = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorA);
+        await SeedVisitorProfileAsync(visitorB);
         var ct = TestContext.Current.CancellationToken;
 
         await SeedAsync(visitorA, count: 3, ct);
@@ -43,6 +45,7 @@ public sealed class CascadeHardDeleteTests : AnalyzerIntegrationTestBase
     public async Task Cascade_completes_under_two_hundred_ms_for_one_thousand_rows()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var ct = TestContext.Current.CancellationToken;
 
         await SeedAsync(visitor, count: 1_000, ct);

@@ -19,7 +19,9 @@ public sealed class EndToEndCaptureTests : AnalyzerIntegrationTestBase
     [Fact]
     public async Task PublishCausesReceiptRowInDb_WithinOneSecond()
     {
-        var pageview = NewPageview(Guid.NewGuid(), Guid.NewGuid());
+        var visitorKey = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorKey);
+        var pageview = NewPageview(Guid.NewGuid(), visitorKey);
         var aggregator = Services.GetRequiredService<IEventAggregator>();
 
         await aggregator.PublishAsync(new PageviewCaptured(pageview), TestContext.Current.CancellationToken);
@@ -30,7 +32,9 @@ public sealed class EndToEndCaptureTests : AnalyzerIntegrationTestBase
     [Fact]
     public async Task DuplicatePublishesProduceSingleRow()
     {
-        var pageview = NewPageview(Guid.NewGuid(), Guid.NewGuid());
+        var visitorKey = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorKey);
+        var pageview = NewPageview(Guid.NewGuid(), visitorKey);
         var aggregator = Services.GetRequiredService<IEventAggregator>();
 
         await aggregator.PublishAsync(new PageviewCaptured(pageview), TestContext.Current.CancellationToken);
@@ -44,6 +48,8 @@ public sealed class EndToEndCaptureTests : AnalyzerIntegrationTestBase
     {
         var visitorA = Guid.NewGuid();
         var visitorB = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorA);
+        await SeedVisitorProfileAsync(visitorB);
         var aggregator = Services.GetRequiredService<IEventAggregator>();
 
         var ct = TestContext.Current.CancellationToken;

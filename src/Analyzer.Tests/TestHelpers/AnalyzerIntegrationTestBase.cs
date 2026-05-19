@@ -1,4 +1,5 @@
 using System.Reflection;
+using Customizer.Features.Visitors.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.SqlClient;
@@ -73,6 +74,14 @@ public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
+                // Umbraco 17.3.5 registers several *EventAuthorizer singletons
+                // that consume the scoped IAuthorizationService — invalid under
+                // ASP.NET Core's Development-mode scope validation that
+                // WebApplicationFactory turns on by default. Pin to Production
+                // so the host boots; integration tests still exercise the
+                // same real persistence + scope semantics, just without the
+                // upstream DI registration mismatch blocking boot.
+                builder.UseEnvironment("Production");
                 builder.ConfigureAppConfiguration((_, config) =>
                 {
                     config.AddInMemoryCollection(new Dictionary<string, string?>
@@ -106,6 +115,48 @@ public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
         {
             await _container.DisposeAsync();
         }
+    }
+
+    /// <summary>
+    /// Inserts a minimal <c>customizerVisitorProfile</c> row so any
+    /// visitor-keyed insert in <c>analyzerSession</c> /
+    /// <c>analyzerCustomEvent</c> / <c>analyzerEventReceipt</c> can
+    /// satisfy its FK to <c>customizerVisitorProfile(key)</c>. Tests
+    /// generate visitor Guids inline and don't otherwise touch
+    /// Customizer's visitor pipeline; this helper plugs the seed gap
+    /// without dragging in the full Customizer identity-resolution path.
+    /// </summary>
+    /// <remarks>
+    /// Idempotent — re-seeding the same key is a no-op so callers can
+    /// safely seed once per Guid without coordinating across helpers.
+    /// </remarks>
+    protected async Task SeedVisitorProfileAsync(Guid visitorKey)
+    {
+        using var scope = ScopeProvider.CreateScope();
+        var exists = scope.Database.ExecuteScalar<int>(
+            "SELECT COUNT(*) FROM customizerVisitorProfile WHERE [key] = @0",
+            visitorKey);
+        if (exists == 0)
+        {
+            var now = DateTime.UtcNow;
+            await scope.Database.InsertAsync(new VisitorProfileDto
+            {
+                Key = visitorKey,
+                IdentityRef = $"oid:{visitorKey:N}",
+                VisitCount = 1,
+                ProfileCreatedUtc = now,
+                LastSeenUtc = now,
+                IsAnonymized = false,
+                AnonymizedActorKey = null,
+                AnonymizedUtc = null,
+                RowVersion = 1,
+                CreatedUtc = now,
+                UpdatedUtc = now,
+                CreatedActorKey = Guid.Empty,
+                UpdatedActorKey = Guid.Empty,
+            }).ConfigureAwait(false);
+        }
+        scope.Complete();
     }
 
     /// <summary>
