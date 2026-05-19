@@ -11,15 +11,18 @@
 import { send, type CustomEventResponse, type CustomEventError } from "./analytics/send";
 import { initialiseFormsTracking } from "./features/forms-tracking";
 import { initialiseScrollTracking } from "./features/scroll-tracking";
+import { initialiseSearchTracking, sendSearch } from "./features/search-tracking";
+import type { SearchEventResult } from "./features/search-tracking";
 
 declare const __ANALYZER_VERSION__: string;
 
-export type { CustomEventResponse, CustomEventError };
-export { send };
+export type { CustomEventResponse, CustomEventError, SearchEventResult };
+export { send, sendSearch };
 
 interface AnalyzerNamespace {
   version: string;
   send: typeof send;
+  sendSearch: typeof sendSearch;
 }
 
 const globalAny = globalThis as Record<string, unknown>;
@@ -29,6 +32,7 @@ const namespace: AnalyzerNamespace = {
   ...(existing ?? {}),
   version: __ANALYZER_VERSION__,
   send,
+  sendSearch,
 };
 
 globalAny.Analyzer = namespace;
@@ -44,3 +48,8 @@ initialiseFormsTracking();
 // after forms-tracking so module-init ordering is deterministic;
 // each module's initialiser is independent (no shared state).
 initialiseScrollTracking();
+
+// Slice 007 — attach `window.analyzer.sendSearch` for in-page search
+// capture. Sequential after scroll so the `window.analyzer` attach
+// ordering stays deterministic (each initialiser is independent).
+initialiseSearchTracking();
