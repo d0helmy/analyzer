@@ -24,6 +24,7 @@ public sealed class AnalyzerSessionRepositoryTouchTests : AnalyzerIntegrationTes
     public async Task TouchAsync_advances_lastActivityUtc_without_changing_pageviewCount()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var sessionKey = await SeedActiveSessionAsync(visitor, deviceKey: "dev1", pageviewCount: 3);
 
         using var scope = Services.CreateScope();
@@ -42,6 +43,7 @@ public sealed class AnalyzerSessionRepositoryTouchTests : AnalyzerIntegrationTes
     public async Task TouchAsync_is_idempotent_on_already_closed_rows()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var sessionKey = await SeedActiveSessionAsync(visitor, deviceKey: "dev2", pageviewCount: 1);
 
         using var scope = Services.CreateScope();

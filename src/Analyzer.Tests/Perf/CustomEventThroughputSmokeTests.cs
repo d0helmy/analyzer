@@ -28,6 +28,7 @@ public sealed class CustomEventThroughputSmokeTests : AnalyzerIntegrationTestBas
     public async Task Cache_hit_p95_under_budget()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var actor = new VisitorIdentity(true, visitor, "oid-1", "user@example.com", false);
         var ct = TestContext.Current.CancellationToken;
 

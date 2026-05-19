@@ -26,6 +26,7 @@ public sealed class ThroughputSmokeTests : AnalyzerIntegrationTestBase
 
         var aggregator = Services.GetRequiredService<IEventAggregator>();
         var visitorKey = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitorKey);
         var pageviewKeys = new List<Guid>(totalPubs);
 
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();

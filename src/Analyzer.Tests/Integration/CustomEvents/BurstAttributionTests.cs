@@ -20,6 +20,7 @@ public sealed class BurstAttributionTests : AnalyzerIntegrationTestBase
     public async Task Two_consecutive_events_attach_to_same_session_and_advance_lastActivityUtc()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var actor = new VisitorIdentity(true, visitor, "oid-1", "user@example.com", false);
         var t0 = DateTimeOffset.UtcNow;
         var t1 = t0.AddSeconds(5);

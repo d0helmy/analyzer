@@ -28,6 +28,7 @@ public sealed class ReceiptCorrelationTests : AnalyzerIntegrationTestBase
     public async Task Typical_capture_has_null_receiptKey()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         using var scope = Services.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<ICustomEventCaptureHandler>();
 
@@ -49,6 +50,7 @@ public sealed class ReceiptCorrelationTests : AnalyzerIntegrationTestBase
     public async Task Capture_with_seeded_receipt_populates_receiptKey()
     {
         var visitor = Guid.NewGuid();
+        await SeedVisitorProfileAsync(visitor);
         var receiptId = Guid.NewGuid();
         using var scope = Services.CreateScope();
 
