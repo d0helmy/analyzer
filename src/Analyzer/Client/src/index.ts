@@ -10,6 +10,7 @@
 
 import { send, type CustomEventResponse, type CustomEventError } from "./analytics/send";
 import { initialiseFormsTracking } from "./features/forms-tracking";
+import { initialiseScrollTracking } from "./features/scroll-tracking";
 
 declare const __ANALYZER_VERSION__: string;
 
@@ -38,3 +39,8 @@ globalAny.analyzer = namespace;
 // pre-DOMContentLoaded: the initialiser defers attach until the DOM
 // is ready when the document is still loading.
 initialiseFormsTracking();
+
+// Slice 006 — auto-attach the scroll-tracking module. Sequential
+// after forms-tracking so module-init ordering is deterministic;
+// each module's initialiser is independent (no shared state).
+initialiseScrollTracking();
