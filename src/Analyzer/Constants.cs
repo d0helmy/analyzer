@@ -86,6 +86,26 @@ public static class Constants
         /// <c>receiptKey</c> for rare in-request co-capture.
         /// </summary>
         public const string AnalyzerCustomEvent = "analyzerCustomEvent";
+
+        /// <summary>
+        /// Slice 005 — one row per Umbraco-Forms lifecycle event
+        /// (<c>Impression</c> / <c>Start</c> / <c>Success</c> /
+        /// <c>Abandon</c>) per <c>(visitorKey, formKey, sessionKey)</c>.
+        /// Hard FK to <c>customizerVisitorProfile(key)</c>; soft FK to
+        /// <c>analyzerSession(sessionKey)</c>; <c>Abandon</c> rows are
+        /// materialised by the slice-003 sweeper rather than POSTed.
+        /// </summary>
+        public const string AnalyzerFormEvent = "analyzerFormEvent";
+
+        /// <summary>
+        /// Slice 005 — one row per <c>FieldFocus</c> / <c>FieldUnfocus</c>
+        /// event per <c>(visitorKey, formKey, fieldKey, sessionKey)</c>.
+        /// Privacy invariant: the schema carries no column for field
+        /// content; <c>hadValue</c> (a single bit, populated only on
+        /// <c>FieldUnfocus</c>) is the only signal derived from what
+        /// the user typed.
+        /// </summary>
+        public const string AnalyzerFormFieldEvent = "analyzerFormFieldEvent";
     }
 
     /// <summary>
@@ -100,6 +120,20 @@ public static class Constants
         /// via the management endpoint (FR-008).
         /// </summary>
         public const string CustomEventCapture = "custom-event-capture";
+
+        /// <summary>
+        /// Slice 005 — emitted on every successful per-form lifecycle
+        /// capture (<c>Impression</c> / <c>Start</c> / <c>Success</c>).
+        /// <c>Abandon</c> rows materialised by the sweeper emit a
+        /// separate batch log entry, not this per-row action.
+        /// </summary>
+        public const string FormEventCapture = "form-event-capture";
+
+        /// <summary>
+        /// Slice 005 — emitted on every successful field-event capture
+        /// (<c>FieldFocus</c> / <c>FieldUnfocus</c>).
+        /// </summary>
+        public const string FormFieldEventCapture = "form-field-event-capture";
     }
 
     /// <summary>

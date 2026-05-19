@@ -28,6 +28,39 @@ TYPE Analyzer.Analytics.AnalyticsEventReceipt : sealed class : interfaces=[Syste
   METHOD virtual System.Boolean Equals(System.Object obj)
   METHOD virtual System.Int32 GetHashCode()
   METHOD virtual System.String ToString()
+TYPE Analyzer.Analytics.AnalyticsFormEvent : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsFormEvent, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR(System.Guid EventKey, System.Guid VisitorProfileKey, System.Nullable<System.Guid> SessionKey, System.Guid FormKey, System.Guid ContentKey, Analyzer.Analytics.AnalyzerFormEventType EventType, System.Nullable<System.Int32> ElapsedMsFromImpression, System.Nullable<System.Int32> ElapsedMsFromStart, System.DateTimeOffset ReceivedUtc)
+  PROP System.Guid ContentKey { get; set; }
+  PROP System.Nullable<System.Int32> ElapsedMsFromImpression { get; set; }
+  PROP System.Nullable<System.Int32> ElapsedMsFromStart { get; set; }
+  PROP System.Guid EventKey { get; set; }
+  PROP Analyzer.Analytics.AnalyzerFormEventType EventType { get; set; }
+  PROP System.Guid FormKey { get; set; }
+  PROP System.DateTimeOffset ReceivedUtc { get; set; }
+  PROP System.Nullable<System.Guid> SessionKey { get; set; }
+  PROP System.Guid VisitorProfileKey { get; set; }
+  METHOD Analyzer.Analytics.AnalyticsFormEvent <Clone>$()
+  METHOD System.Void Deconstruct(System.Guid& EventKey, System.Guid& VisitorProfileKey, System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& SessionKey, System.Guid& FormKey, System.Guid& ContentKey, Analyzer.Analytics.AnalyzerFormEventType& EventType, System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& ElapsedMsFromImpression, System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& ElapsedMsFromStart, System.DateTimeOffset& ReceivedUtc)
+  METHOD virtual System.Boolean Equals(Analyzer.Analytics.AnalyticsFormEvent other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()
+TYPE Analyzer.Analytics.AnalyticsFormFieldEvent : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsFormFieldEvent, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR(System.Guid EventKey, System.Guid VisitorProfileKey, System.Nullable<System.Guid> SessionKey, System.Guid FormKey, System.Guid FieldKey, Analyzer.Analytics.AnalyzerFormFieldEventType EventType, System.Nullable<System.Boolean> HadValue, System.DateTimeOffset ReceivedUtc)
+  PROP System.Guid EventKey { get; set; }
+  PROP Analyzer.Analytics.AnalyzerFormFieldEventType EventType { get; set; }
+  PROP System.Guid FieldKey { get; set; }
+  PROP System.Guid FormKey { get; set; }
+  PROP System.Nullable<System.Boolean> HadValue { get; set; }
+  PROP System.DateTimeOffset ReceivedUtc { get; set; }
+  PROP System.Nullable<System.Guid> SessionKey { get; set; }
+  PROP System.Guid VisitorProfileKey { get; set; }
+  METHOD Analyzer.Analytics.AnalyticsFormFieldEvent <Clone>$()
+  METHOD System.Void Deconstruct(System.Guid& EventKey, System.Guid& VisitorProfileKey, System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& SessionKey, System.Guid& FormKey, System.Guid& FieldKey, Analyzer.Analytics.AnalyzerFormFieldEventType& EventType, System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& HadValue, System.DateTimeOffset& ReceivedUtc)
+  METHOD virtual System.Boolean Equals(Analyzer.Analytics.AnalyticsFormFieldEvent other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()
 TYPE Analyzer.Analytics.AnalyticsSession : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Analytics.AnalyticsSession, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
   CTOR(System.Guid SessionKey, System.Guid VisitorProfileKey, System.DateTimeOffset StartUtc, System.DateTimeOffset LastActivityUtc, System.Nullable<System.DateTimeOffset> EndUtc, System.Int32 PageviewCount, System.Boolean IsActive)
   PROP System.Nullable<System.DateTimeOffset> EndUtc { get; set; }
@@ -43,8 +76,20 @@ TYPE Analyzer.Analytics.AnalyticsSession : sealed class : interfaces=[System.IEq
   METHOD virtual System.Boolean Equals(System.Object obj)
   METHOD virtual System.Int32 GetHashCode()
   METHOD virtual System.String ToString()
+TYPE Analyzer.Analytics.AnalyzerFormEventType : enum : interfaces=[System.IComparable,System.IConvertible,System.IFormattable,System.ISpanFormattable]
+  FIELD static Analyzer.Analytics.AnalyzerFormEventType Abandon
+  FIELD static Analyzer.Analytics.AnalyzerFormEventType Impression
+  FIELD static Analyzer.Analytics.AnalyzerFormEventType Start
+  FIELD static Analyzer.Analytics.AnalyzerFormEventType Success
+  FIELD System.Byte value__
+TYPE Analyzer.Analytics.AnalyzerFormFieldEventType : enum : interfaces=[System.IComparable,System.IConvertible,System.IFormattable,System.ISpanFormattable]
+  FIELD static Analyzer.Analytics.AnalyzerFormFieldEventType FieldFocus
+  FIELD static Analyzer.Analytics.AnalyzerFormFieldEventType FieldUnfocus
+  FIELD System.Byte value__
 TYPE Analyzer.Analytics.IAnalyticsEventStateProvider : interface : <>
   PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsCustomEvent> CurrentRequestCustomEvents { get; }
+  PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsFormEvent> CurrentRequestFormEvents { get; }
+  PROP System.Collections.Generic.IReadOnlyList<Analyzer.Analytics.AnalyticsFormFieldEvent> CurrentRequestFormFieldEvents { get; }
   PROP Analyzer.Analytics.AnalyticsEventReceipt CurrentRequestReceipt { get; }
   PROP Analyzer.Analytics.AnalyticsSession CurrentSession { get; }
 TYPE Analyzer.Features.Visitors.Application.Contracts.IVisitorIdentifier : interface : <>

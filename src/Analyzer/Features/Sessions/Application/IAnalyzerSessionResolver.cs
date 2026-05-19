@@ -87,6 +87,15 @@ internal enum SessionActivityKind
     /// Mixpanel/GA "engagement keeps the session alive" pattern).
     /// </summary>
     CustomEvent = 1,
+
+    /// <summary>
+    /// Slice 005 — form impression: passive observation, does NOT
+    /// advance <c>lastActivityUtc</c>. The resolver returns the
+    /// current session for FK linkage but issues no UPDATE. Edge case
+    /// "Impressions are passive" (spec) — an impression alone must
+    /// not keep a session alive past the inactivity timeout.
+    /// </summary>
+    FormImpression = 2,
 }
 
 /// <summary>
