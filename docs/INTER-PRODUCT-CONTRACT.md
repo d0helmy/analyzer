@@ -1,9 +1,10 @@
 # Analyzer ↔ Customizer Inter-Product Contract
 
-**Status:** Draft v2 — 2026-05-17 (inverted layering)
+**Status:** Draft v3 — 2026-05-19 (additive — slice-014 pinning amendment)
 **Authors:** Product owner (Dia) + AI
 **Binding on:** [`analyzer`](https://github.com/d0helmy/analyzer) and [`customizer`](https://github.com/d0helmy/customizer)
 **v1 → v2 change:** dependency direction inverted. Analyzer now depends on Customizer (was the opposite in v1). Rationale: Customizer is shipped, tested, pinned; Analyzer is paper. Always-deployed-together makes the layering a code-organization choice, not a deployment topology one. Less churn → faster shipping.
+**v2 → v3 change** (2026-05-19, additive — no layering or ownership flip): Customizer slice-014 (Headless API & Visitor Identity, issue [#14](https://github.com/d0helmy/customizer/issues/14)) pins `IAnalyticsStateProvider.PageviewSegments` at shape `IReadOnlyCollection<Guid>` in `PublicSurfacePinningTests`. Analyzer already consumes this surface as `IReadOnlyCollection<Guid>` per slice-003 — zero Analyzer code change. Future shape changes on `PageviewSegments` are now a major version bump signal on Customizer's side. Pin landed via the slice-014 PR (branch `014-headless-api-visitor-identity`); amendment recorded here for cross-product traceability.
 
 This contract resolves the scope overlap that exists between Analyzer
 (new, being specified) and Customizer (shipped — slices 001–008 on
