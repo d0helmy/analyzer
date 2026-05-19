@@ -138,7 +138,7 @@ LogInformation(
   eventKey, pageviewKey, bucket, actorUpn, receivedUtc);
 ```
 
-The auditor is invoked from the management controller only on a successful insert (after the repo returns the inserted DTO). Failures (401/403/400/409/500) are NOT audit-logged at this level — the auth/auth-z layer and the unique-index detector already log; double-logging is noise.
+The auditor is invoked from the management controller on a successful insert (after the repo returns the inserted DTO) AND on a `ScrollSampleDuplicateException` (the unique-index rejection of an already-captured `(pageviewKey, bucket)` tuple). The duplicate path uses a distinct `Duplicate`-tagged overload — a 409 is a successful idempotency rejection, not an authn/authz failure, and the captured-once-already row is operationally interesting. Failures at the boundary layer (401/403/400/500) are NOT audit-logged at this level — the auth/auth-z layer and the model-binder already log; double-logging is noise.
 
 **Rationale**: parity with slice-005's auditor + Customizer's audit conventions. Structured fields are queryable in any log-shipper.
 
