@@ -4,8 +4,12 @@
 // Slice 004 adds `window.analyzer.send("event", ...)` — the first
 // callable client API, used by Razor pages to push custom engagement
 // events to the management endpoint (US1).
+// Slice 005 adds auto-attached per-form lifecycle capture
+// (Impression / Start / Success) for every Umbraco Form rendered at
+// DOMContentLoaded.
 
 import { send, type CustomEventResponse, type CustomEventError } from "./analytics/send";
+import { initialiseFormsTracking } from "./features/forms-tracking";
 
 declare const __ANALYZER_VERSION__: string;
 
@@ -29,3 +33,8 @@ const namespace: AnalyzerNamespace = {
 globalAny.Analyzer = namespace;
 // Lowercase alias — spec naming convention `window.analyzer.send(...)`.
 globalAny.analyzer = namespace;
+
+// Slice 005 — auto-attach the forms-tracking module. Safe to call
+// pre-DOMContentLoaded: the initialiser defers attach until the DOM
+// is ready when the document is still loading.
+initialiseFormsTracking();
