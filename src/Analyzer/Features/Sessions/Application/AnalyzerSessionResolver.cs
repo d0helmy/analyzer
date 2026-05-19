@@ -124,9 +124,11 @@ internal sealed class AnalyzerSessionResolver : IAnalyzerSessionResolver
             return new SessionResolutionResult(entry.SessionKey, passiveProjection);
         }
 
-        if (activityKind == SessionActivityKind.CustomEvent)
+        if (activityKind == SessionActivityKind.CustomEvent
+            || activityKind == SessionActivityKind.ScrollEvent)
         {
-            // Custom-event flow: advance lastActivityUtc only; do NOT
+            // Engagement flow (slice 004 custom events + slice 006
+            // scroll milestones): advance lastActivityUtc only; do NOT
             // increment pageviewCount (Clarification §1). The repository's
             // TouchAsync UPDATE is idempotent on already-closed rows;
             // if the sweeper closed the row between cache-read and
