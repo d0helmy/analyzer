@@ -195,20 +195,26 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-Last shipped: slice 005 (forms tracking). Branch `005-forms-tracking`,
-7 commits on top of slice 004. Adds `analyzerFormEvent` +
-`analyzerFormFieldEvent` tables, the
-`POST /umbraco/management/api/v1/analyzer/form-event/{lifecycle,field}`
-management endpoints, `AnalyzerVisitorIdField` Umbraco Forms field
-type (auto-discovered; populates `customizerVisitorProfile.key` via
-`FieldType.ConvertToRecord`), `analyzer-no-tracking` opt-out
-attribute (client-side short-circuit), abandonment materialisation
-hooked into slice-003's `AnalyzerSessionSweeperService`, two new
-cascade-step registrations (fourth + fifth
-`IAnonymizationCascadeStep`). New package dep: Umbraco.Forms 17.x.
-Artifacts under [`specs/005-forms-tracking/`](specs/005-forms-tracking/).
-No cross-product Customizer change required.
+In flight: slice 006 (scroll tracking) — design stack landed. Branch
+`006-scroll-tracking` (1 commit ahead of main at spec, additional
+plan-stack commits forthcoming). Adds the `analyzerScrollSample`
+table (single-table; unique index `UX_analyzerScrollSample_pageviewBucket`
+enforces per-pageview-per-bucket idempotency), the
+`POST /umbraco/management/api/v1/analyzer/scroll-event/milestone`
+management endpoint, a client-side scroll observer in
+`src/Analyzer/Client/src/features/scroll-tracking/` (passive listener
++ rAF throttle + fixed-quartile bucket-crossing detection), one new
+cascade-step registration (sixth `IAnonymizationCascadeStep`). Reuses
+the `analyzer-no-tracking` opt-out attribute and the `pageviewKey`
+plumbing from slice 005; **no new package dependency**; no Customizer-
+side change required. Design artifacts under
+[`specs/006-scroll-tracking/`](specs/006-scroll-tracking/) —
+[plan.md](specs/006-scroll-tracking/plan.md), research.md,
+data-model.md, 5 contracts, quickstart.md. Constitution Check 10/10
+PASS pre- and post-design. Estimated 35-50 tasks at `/speckit-tasks`
+time.
 
-Slice 004 (custom events) shipped at `bbc5b27`; cross-slice
-test-base FK-seeding fix merged at `8d57481`.
+Last shipped: slice 005 (forms tracking) at `5e868ef`; slice 004
+(custom events) at `bbc5b27`; cross-slice test-base FK-seeding fix
+merged at `8d57481`.
 <!-- SPECKIT END -->
