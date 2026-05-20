@@ -151,3 +151,20 @@ TYPE Analyzer.Features.Visitors.Application.Contracts.VisitorIdentity : struct :
   METHOD virtual System.Boolean Equals(System.Object obj)
   METHOD virtual System.Int32 GetHashCode()
   METHOD virtual System.String ToString()
+TYPE Analyzer.Reporting.ContentAnalytics.ContentAnalyticsSnapshot : sealed class : interfaces=[System.IEquatable`1[[Analyzer.Reporting.ContentAnalytics.ContentAnalyticsSnapshot, Analyzer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]]
+  CTOR(System.Guid ContentKey, System.DateTimeOffset WindowEndUtc, System.Int32 Pageviews24h, System.Int32 Pageviews7d, System.Int32 Pageviews30d, System.Int32 UniqueVisitors30d, System.Nullable<System.Int64> AvgTimeOnPageSeconds30d, System.Boolean IsContentCurrentlyTombstoned, System.Collections.Generic.IReadOnlyList<System.String> TopReferrers30d)
+  PROP System.Nullable<System.Int64> AvgTimeOnPageSeconds30d { get; set; }
+  PROP System.Guid ContentKey { get; set; }
+  PROP System.Boolean IsContentCurrentlyTombstoned { get; set; }
+  PROP System.Int32 Pageviews24h { get; set; }
+  PROP System.Int32 Pageviews30d { get; set; }
+  PROP System.Int32 Pageviews7d { get; set; }
+  PROP System.Collections.Generic.IReadOnlyList<System.String> TopReferrers30d { get; set; }
+  PROP System.Int32 UniqueVisitors30d { get; set; }
+  PROP System.DateTimeOffset WindowEndUtc { get; set; }
+  METHOD Analyzer.Reporting.ContentAnalytics.ContentAnalyticsSnapshot <Clone>$()
+  METHOD System.Void Deconstruct(System.Guid& ContentKey, System.DateTimeOffset& WindowEndUtc, System.Int32& Pageviews24h, System.Int32& Pageviews7d, System.Int32& Pageviews30d, System.Int32& UniqueVisitors30d, System.Nullable`1[[System.Int64, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& AvgTimeOnPageSeconds30d, System.Boolean& IsContentCurrentlyTombstoned, System.Collections.Generic.IReadOnlyList`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& TopReferrers30d)
+  METHOD virtual System.Boolean Equals(Analyzer.Reporting.ContentAnalytics.ContentAnalyticsSnapshot other)
+  METHOD virtual System.Boolean Equals(System.Object obj)
+  METHOD virtual System.Int32 GetHashCode()
+  METHOD virtual System.String ToString()

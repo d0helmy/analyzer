@@ -29,6 +29,9 @@ namespace Analyzer.Tests.PublicSurface;
 ///   <item><c>Analyzer.Features.Forms.Infrastructure.UmbracoForms</c> —
 ///   slice-005 <c>AnalyzerVisitorIdField</c> (consumed by host
 ///   operators via Umbraco Forms' field-type designer).</item>
+///   <item><c>Analyzer.Reporting.ContentAnalytics</c> — slice-008
+///   <c>ContentAnalyticsSnapshot</c> read-side DTO returned by the
+///   per-content-node Analytics management endpoint.</item>
 /// </list>
 /// Regenerate the baseline ONLY when the change is deliberate and a
 /// semver bump is planned: set
@@ -41,6 +44,7 @@ public sealed class PublicSurfacePinningTests
         "Analyzer.Analytics",
         "Analyzer.Features.Visitors.Application.Contracts",
         "Analyzer.Features.Forms.Infrastructure.UmbracoForms",
+        "Analyzer.Reporting.ContentAnalytics",
     };
 
     private static readonly string SnapshotPath = LocateSnapshot();
