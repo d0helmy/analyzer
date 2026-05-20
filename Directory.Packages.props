@@ -3,15 +3,23 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- Allow `17.*` floating on host-side Umbraco meta-packages so the
          sample host tracks Umbraco minor releases without per-bump
-         edits. RCL packages remain strictly pinned to 17.3.5. -->
+         edits. RCL packages pinned to 17.4.1 to match Customizer's
+         floor (Customizer commit c98687f). -->
     <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+    <!-- Allow PackageVersion entries below to pin transitive packages
+         (MailKit + System.Security.Cryptography.Xml advisory bumps,
+         issue #10). Without this flag, transitive-only PackageVersion
+         entries are silently ignored by NuGet. Mirrors Customizer. -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <!--
-    Umbraco — pinned to 17.3.5 per Constitution Tech Stack constraint.
+    Umbraco — pinned to 17.4.1 per Constitution Tech Stack constraint.
     Package selection mirrors Customizer's choices for symmetry
     between the two co-deployed products (see
-    ../customizer/Directory.Packages.props).
+    ../customizer/Directory.Packages.props). The floor must match
+    Customizer's, otherwise NU1605 fires on Analyzer.csproj because
+    Analyzer transitively consumes Customizer's pin.
 
     `Umbraco.Cms.Web.Common` + `Umbraco.Cms.Web.Website` are referenced
     by the RCL (src/Analyzer); the meta `Umbraco.Cms` package and the
@@ -19,8 +27,8 @@
     host (samples/Analyzer.Host) for clone-and-go local dev.
   -->
   <ItemGroup>
-    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="17.3.5" />
-    <PackageVersion Include="Umbraco.Cms.Web.Website" Version="17.3.5" />
+    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="17.4.1" />
+    <PackageVersion Include="Umbraco.Cms.Web.Website" Version="17.4.1" />
     <PackageVersion Include="Umbraco.Cms" Version="17.*" />
     <PackageVersion Include="Umbraco.Cms.DevelopmentMode.Backoffice" Version="17.*" />
     <!-- Slice 005 — Umbraco.Forms 17.x pin. Floating range tolerates host
@@ -31,6 +39,17 @@
          with. -->
     <PackageVersion Include="Umbraco.Forms" Version="[17.0.0,18.0.0)" />
     <PackageVersion Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
+
+    <!-- Transitive vulnerability pin-overrides (issue #10). Umbraco.Cms
+         17.x pulls MailKit 4.15.1 (NU1902 moderate, GHSA-9j88-vvj5-vhgr)
+         and Microsoft.AspNetCore.DataProtection pulls
+         System.Security.Cryptography.Xml 8.0.0 (NU1903 high, two CVEs:
+         GHSA-37gx-xxp4-5rgx + GHSA-w3x6-4m5h-cxqf). Pin to clean
+         versions. Mirrors Customizer's pin-overrides; remove when
+         Umbraco bumps its own transitive floors past the advisory
+         ceilings. -->
+    <PackageVersion Include="MailKit" Version="4.16.0" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.8" />
   </ItemGroup>
 
   <!--
@@ -39,8 +58,8 @@
     dev. Versions mirror ../customizer/aspire/Customizer.AppHost.
   -->
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.3.1" />
-    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.3.1" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.3.4" />
+    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.3.4" />
   </ItemGroup>
 
   <!--
@@ -78,6 +97,6 @@
     <!-- WebApplicationFactory<Program> + Aspire-compatible SQL client
          for slice-002 integration tests. Versions mirror Customizer. -->
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.1" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.4" />
   </ItemGroup>
 </Project>

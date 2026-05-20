@@ -402,7 +402,9 @@ search) without forcing a monolithic version bump on consumers.
 
 - **Server**: .NET 10 Razor Class Library targeting Umbraco CMS 17.x;
   central package management via `src/Analyzer/Directory.Packages.props`
-  with **Umbraco 17.3.5 pinned**.
+  with **`Umbraco.Cms.Web.Common` / `Umbraco.Cms.Web.Website` pinned at
+  17.4.1** to match Customizer's floor; the meta `Umbraco.Cms` packages
+  float on `17.*` for the sample host.
 - **Backoffice client**: TypeScript + Vite + `@umbraco-cms/backoffice`
   17.3.5; source under `src/Analyzer/Client/`; bundle emitted to
   `wwwroot/App_Plugins/Analyzer/analyzer.js`.
