@@ -1,0 +1,33 @@
+@*
+    Slice 007 quickstart support — emits the per-request pageviewKey to
+    the browser and loads the Analyzer client bundle so
+    `window.analyzer.sendSearch(...)` is callable from DevTools.
+
+    Reads the Pageview record set by Customizer's PageviewCaptureMiddleware
+    in HttpContext.Items[ "Customizer.Visitors.Pageview" ].
+
+    NOT a permanent slice-001 wiring — this partial lives only in the
+    sample host. Filed as slice-007-followups: move script-injection
+    into Customizer's middleware so deploying intranets don't have to
+    hand-roll this.
+*@
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var items = HttpContextAccessor.HttpContext?.Items;
+    object? pageview = items is not null && items.TryGetValue("Customizer.Visitors.Pageview", out var pv) ? pv : null;
+    var keyProp = pageview?.GetType().GetProperty("Key");
+    var pageviewKey = keyProp?.GetValue(pageview) as Guid?;
+}
+@if (pageviewKey is Guid pvk)
+{
+    <script>
+        window.analyzer = window.analyzer || {};
+        window.analyzer.pageviewKey = "@pvk";
+    </script>
+    <script type="module" src="/App_Plugins/Analyzer/analyzer.js"></script>
+}
+else
+{
+    <!-- Analyzer scripts skipped: no Customizer pageview captured for this request -->
+}

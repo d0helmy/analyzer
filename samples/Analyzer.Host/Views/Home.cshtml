@@ -1,0 +1,25 @@
+﻿@using Umbraco.Cms.Web.Common.PublishedModels
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@Model.Name — Analyzer dev host</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+        pre { background: #f4f4f4; padding: 0.75rem 1rem; border-radius: 4px; overflow-x: auto; }
+        code { background: #f4f4f4; padding: 0.1rem 0.3rem; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>@Model.Name</h1>
+    <p>Slice 007 quickstart page. Open DevTools and run from the Console:</p>
+    <pre>await window.analyzer.sendSearch("design system", 12);</pre>
+    <p>Expected: <code>{ eventKey: "&lt;guid&gt;" }</code> and a POST to <code>/umbraco/management/api/v1/analyzer/search-event</code>.</p>
+
+    @await Html.PartialAsync("_AnalyzerScripts")
+</body>
+</html>
