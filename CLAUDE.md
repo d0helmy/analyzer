@@ -195,28 +195,9 @@ session) to move from requirements → plan → tasks → implementation:
 Optional: `/speckit-clarify`, `/speckit-analyze`, `/speckit-checklist`.
 
 <!-- SPECKIT START -->
-Last shipped: slice 007 (search tracking) at `26f3559`. PR #27
-rebase-merged; 3 impl commits on top of the slice's spec/plan/tasks
-commit. Adds the `analyzerSearchEvent` table (raw + normalised query
-+ result count + visitor-bound `pageviewKey`, PII-tagged per
-`FR-SRC-04`), the new public extension point
-`IAnalyzerSearchQueryNormaliser` (first Analyzer-defined surface
-since slice 001's `IVisitorIdentifier`) with default trim + NFKC +
-InvariantLower + whitespace-collapse implementation locked by a
-100-pair fixture, the `POST /umbraco/management/api/v1/analyzer/search-event`
-management endpoint with a visitor-bound `pageviewKey` check (R3 —
-strengthens defence vs slice 006), a client-side
-`window.analyzer.sendSearch(query, resultCount)` helper in
-`src/Analyzer/Client/src/features/search-tracking/` (per-call opt-out
-evaluation; returns `Promise<{ eventKey } | { skipped: true }>`),
-and a seventh `IAnonymizationCascadeStep` registration (hard-delete
-— diverges from contract D8's re-key disposition; D8 amended in the
-same PR per spec Clarifications §2). Audit-log emits ActorUpn/Oid +
-EventKey + PageviewKey + ResultCount but **never** the query (PII
-redaction, SC-006). **No new package dependency**; no Customizer-side
-change required. Artifacts under
-[`specs/007-search-tracking/`](specs/007-search-tracking/).
+Current slice: **008 — per-content-node Analytics content app** (read-side reporting; FR-RPT-*, contract D9). First non-capture slice. Plan in [`specs/008-content-analytics-app/plan.md`](specs/008-content-analytics-app/plan.md). Adds a backoffice content-app tab on every Umbraco content node (registered via `umbraco-package.json` workspace-alias condition `Umb.Workspace.Document`), a read-only `GET /umbraco/management/api/v1/analyzer/content-analytics/{contentKey}` management endpoint returning a `ContentAnalyticsSnapshot` DTO (pageviews 24h/7d/30d, unique visitors 30d, avg time on page 30d, `isContentCurrentlyTombstoned`, empty `topReferrers30d` placeholder), and a `IIndividualDataAccessCheck` internal role-gate primitive for the future per-visitor drill-down slice. **Zero new tables, zero new migrations, zero new cascade steps** — pure aggregation over `customizerVisitorPageview` + `analyzerSession`. Avg-time-on-page derived via `LAG()` window function (last pageview per session excluded). Anonymised visitors preserved in `COUNT(DISTINCT visitorProfileFk)` without ever joining to `identityRef`. Loading state: skeleton placeholders + `aria-busy="true"` (no spinner, no transient-zero). Manual quickstart **deferred** behind slice-007-followup #34 (EntraID claims shim); validation surface is server-side unit + Vitest jsdom + Testcontainers integration with faked claims. Spec clarified through 5 questions (visibility / time-on-page source / tombstone semantic / role-gate scope / loading-state UX).
 
-Slice 006 (scroll tracking) shipped at `7a20451`; slice 005 (forms
-tracking) at `5e868ef`; slice 004 (custom events) at `bbc5b27`.
+Last shipped: slice 007 (search tracking) at `26f3559`. PR #27 rebase-merged; 3 impl commits on top of the slice's spec/plan/tasks commit. T053 manual quickstart **deferred** — see PR #27 comment + issues #28-#34 (host-side blockers, all on project #7 backlog). Workaround PRs analyzer#32 + customizer#43 on `t053-workarounds` branches.
+
+Slice 006 (scroll tracking) shipped at `7a20451`; slice 005 (forms tracking) at `5e868ef`; slice 004 (custom events) at `bbc5b27`.
 <!-- SPECKIT END -->
