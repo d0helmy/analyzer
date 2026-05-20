@@ -13,6 +13,11 @@ import { initialiseFormsTracking } from "./features/forms-tracking";
 import { initialiseScrollTracking } from "./features/scroll-tracking";
 import { initialiseSearchTracking, sendSearch } from "./features/search-tracking";
 import type { SearchEventResult } from "./features/search-tracking";
+// Slice 008 — register the per-content-node content-app element. The
+// `import "..."` side-effect runs the @customElement registration so
+// the element is available when Umbraco's backoffice instantiates the
+// content-app tab declared in umbraco-package.json.
+import "./features/content-analytics/content-app.element";
 
 declare const __ANALYZER_VERSION__: string;
 

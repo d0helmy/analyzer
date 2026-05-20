@@ -9,6 +9,23 @@
       "alias": "Analyzer.Bundle",
       "type": "bundle",
       "js": "/App_Plugins/Analyzer/analyzer.js"
+    },
+    {
+      "name": "Content Analytics",
+      "alias": "Analyzer.ContentApp.ContentAnalytics",
+      "type": "workspaceView",
+      "kind": "contentApp",
+      "element": "/App_Plugins/Analyzer/analyzer.js",
+      "elementName": "analyzer-content-analytics-app",
+      "weight": 200,
+      "meta": {
+        "label": "Analytics",
+        "pathname": "analytics",
+        "icon": "icon-chart-line"
+      },
+      "conditions": [
+        { "alias": "Umb.Condition.WorkspaceAlias", "match": "Umb.Workspace.Document" }
+      ]
     }
   ]
 }
