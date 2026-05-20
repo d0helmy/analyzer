@@ -23,6 +23,11 @@ export default defineConfig({
       fileName: () => "analyzer.js",
     },
     rollupOptions: {
+      // Slice 008: Umbraco's backoffice provides the @umbraco-cms/*
+      // (and transitive @umbraco-ui/*) runtime — externalise so we
+      // don't ship a megabyte of vendor code with our 10 kB bundle.
+      // Mirrors Customizer's vite.config.ts.
+      external: [/^@umbraco-cms\//, /^@umbraco-ui\//, /^lit/],
       // Copy the umbraco-package.json manifest alongside the bundle so
       // the host Umbraco picks it up automatically (FR-006).
       output: {
