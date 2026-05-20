@@ -45,7 +45,7 @@ internal sealed class DefaultIndividualDataAccessCheck : IIndividualDataAccessCh
             : configured!;
 
         return principal.Claims.Any(c =>
-            c.Type == Umbraco.Cms.Core.Constants.Security.UserGroupClaimType &&
+            c.Type == System.Security.Claims.ClaimTypes.Role &&
             string.Equals(c.Value, groupAlias, StringComparison.Ordinal));
     }
 }
@@ -55,10 +55,10 @@ internal sealed class DefaultIndividualDataAccessCheck : IIndividualDataAccessCh
 
 | Principal state | Configured alias | Result |
 |---|---|---|
-| Authenticated, has `userGroup` claim matching configured alias | non-empty | `true` |
-| Authenticated, has `userGroup` claim matching the fallback `"Analytics.IndividualData"` | null / empty / whitespace | `true` |
-| Authenticated, no `userGroup` claim at all | any | `false` |
-| Authenticated, has `userGroup` claim mismatching alias | any | `false` |
+| Authenticated, has role claim matching configured alias | non-empty | `true` |
+| Authenticated, has role claim matching the fallback `"Analytics.IndividualData"` | null / empty / whitespace | `true` |
+| Authenticated, no role claim at all | any | `false` |
+| Authenticated, has role claim mismatching alias | any | `false` |
 | Anonymous (`principal.Identity?.IsAuthenticated == false`) | any | `false` (no claims to match) |
 
 ## Registration
@@ -76,10 +76,10 @@ Singleton lifetime (the check is stateless and reads `IOptions<>` at evaluation 
 
 | # | Scenario | Expected |
 |---|---|---|
-| 1 | Principal with single matching `userGroup` claim | true |
-| 2 | Principal with multiple `userGroup` claims, one matches | true |
-| 3 | Principal with no `userGroup` claim | false |
-| 4 | Principal with mismatching `userGroup` claim | false |
+| 1 | Principal with single matching role claim | true |
+| 2 | Principal with multiple role claims, one matches | true |
+| 3 | Principal with no role claim | false |
+| 4 | Principal with mismatching role claim | false |
 | 5 | `IndividualDataUserGroupAlias` config explicitly set | matching alias accepted |
 | 6 | `IndividualDataUserGroupAlias` config = null | falls back to `"Analytics.IndividualData"` |
 | 7 | `IndividualDataUserGroupAlias` config = whitespace | falls back to `"Analytics.IndividualData"` |

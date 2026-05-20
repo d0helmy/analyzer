@@ -200,6 +200,29 @@ public static class Constants
         /// prefix to <c>/umbraco/management/api/v1/analyzer/...</c>.
         /// </summary>
         public const string ApiName = "analyzer";
+
+        /// <summary>
+        /// Slice 008 — relative route segment for the per-content-node
+        /// content-analytics management endpoint. Resolved by the
+        /// shared <c>BackOfficeRoute</c> prefix to
+        /// <c>/umbraco/management/api/v1/analyzer/content-analytics/{contentKey:guid}</c>.
+        /// </summary>
+        public const string ContentAnalyticsPath = "content-analytics";
+    }
+
+    /// <summary>
+    /// Slice 008 — strongly-named configuration section keys consumed
+    /// via <see cref="Microsoft.Extensions.Options.IOptions{TOptions}"/>.
+    /// </summary>
+    public static class Configuration
+    {
+        /// <summary>
+        /// Section bound to
+        /// <c>Analyzer.Features.Reporting.Application.AnalyzerReportingOptions</c>
+        /// — host operators override
+        /// <c>IndividualDataUserGroupAlias</c> here.
+        /// </summary>
+        public const string ReportingSection = "Analyzer:Reporting";
     }
 }
 
