@@ -11,6 +11,7 @@
     into Customizer's middleware so deploying intranets don't have to
     hand-roll this.
 *@
+@using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     var items = HttpContextAccessor.HttpContext?.Items;
