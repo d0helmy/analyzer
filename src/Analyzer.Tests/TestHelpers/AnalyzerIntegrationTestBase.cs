@@ -25,9 +25,13 @@ namespace Analyzer.Tests.TestHelpers;
 /// <item><c>ConnectionStrings__umbracoDbDSN</c> environment variable —
 /// preferred when the Aspire AppHost is already running locally; uses
 /// the persistent volume so tests reuse the warm container.</item>
-/// <item>Testcontainers fallback — spins up an ephemeral
-/// <c>mcr.microsoft.com/mssql/server</c> container per test class
-/// (first run pulls ~1.5 GB; subsequent runs reuse the image).</item>
+/// <item>Testcontainers fallback — spins up a <em>single</em>
+/// process-shared <c>mcr.microsoft.com/mssql/server</c> container and
+/// gives each test class its own catalog inside it (#53 — Docker
+/// concurrency conflicts when xUnit v3's parallel runner tried to
+/// spin up one container per class). First run pulls ~1.5 GB;
+/// subsequent runs reuse the image. Testcontainers' Ryuk reaper
+/// disposes the container on process exit.</item>
 /// </list>
 /// <para>
 /// Tagged <c>Category=Integration</c> so unit-test runs skip these by
@@ -38,8 +42,12 @@ public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
 {
     private const string EnvConnectionString = "ConnectionStrings__umbracoDbDSN";
 
-    private MsSqlContainer? _container;
+    private static MsSqlContainer? _sharedContainer;
+    private static readonly SemaphoreSlim _sharedContainerLock = new(1, 1);
+
     private WebApplicationFactory<Program>? _factory;
+    private string? _perClassCatalog;
+    private string? _serverConnectionString;
 
     static AnalyzerIntegrationTestBase() => PreloadTestHostAssemblies();
 
@@ -61,15 +69,30 @@ public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        var connectionString = Environment.GetEnvironmentVariable(EnvConnectionString);
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            _container = new MsSqlBuilder().Build();
-            await _container.StartAsync();
-            connectionString = _container.GetConnectionString();
-        }
+        var envConnectionString = Environment.GetEnvironmentVariable(EnvConnectionString);
+        string connectionString;
 
-        await ResetSchemaAsync(connectionString);
+        if (!string.IsNullOrWhiteSpace(envConnectionString))
+        {
+            // Aspire AppHost mode — operator-owned warm container with a
+            // persistent catalog. Reset the schema between classes so each
+            // class starts clean.
+            connectionString = envConnectionString;
+            await ResetSchemaAsync(connectionString);
+        }
+        else
+        {
+            // Testcontainers mode — share one container across the test
+            // process, give each class its own catalog. #53.
+            _serverConnectionString = await EnsureSharedContainerAsync();
+            _perClassCatalog = $"Analyzer_{Guid.NewGuid():N}";
+            var csb = new SqlConnectionStringBuilder(_serverConnectionString)
+            {
+                InitialCatalog = _perClassCatalog,
+            };
+            await CreateCatalogAsync(_serverConnectionString, _perClassCatalog);
+            connectionString = csb.ConnectionString;
+        }
 
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -124,9 +147,21 @@ public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
     public async ValueTask DisposeAsync()
     {
         _factory?.Dispose();
-        if (_container is not null)
+
+        if (_serverConnectionString is not null && _perClassCatalog is not null)
         {
-            await _container.DisposeAsync();
+            // Drop the per-class catalog so the shared container doesn't
+            // accumulate dead Analyzer_<guid> databases across runs.
+            try
+            {
+                await DropCatalogAsync(_serverConnectionString, _perClassCatalog);
+            }
+            catch
+            {
+                // Best-effort cleanup. The shared container is reaped on
+                // process exit by Testcontainers' Ryuk, so a leaked catalog
+                // dies with the container anyway.
+            }
         }
     }
 
@@ -173,19 +208,78 @@ public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
     }
 
     /// <summary>
-    /// Drops + recreates the Umbraco schema between class fixtures so
-    /// migration history is clean and the test base owns a fresh
-    /// database. No-op when the container was just created (already
-    /// empty); idempotent.
+    /// Starts (or returns the already-started) shared MSSQL container for
+    /// this test process. Concurrent callers race on a semaphore so only
+    /// one container is built no matter how many xUnit collections start
+    /// in parallel. Container is reaped on process exit by Testcontainers'
+    /// Ryuk — no explicit dispose path needed.
+    /// </summary>
+    private static async Task<string> EnsureSharedContainerAsync()
+    {
+        if (_sharedContainer is not null)
+        {
+            return _sharedContainer.GetConnectionString();
+        }
+
+        await _sharedContainerLock.WaitAsync();
+        try
+        {
+            if (_sharedContainer is null)
+            {
+                var container = new MsSqlBuilder().Build();
+                await container.StartAsync();
+                _sharedContainer = container;
+            }
+            return _sharedContainer.GetConnectionString();
+        }
+        finally
+        {
+            _sharedContainerLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Creates a new SQL Server catalog named <paramref name="catalog"/>
+    /// against the server reachable via <paramref name="serverConnectionString"/>
+    /// (whose <c>Initial Catalog</c> may be anything; the command runs
+    /// against <c>master</c>).
+    /// </summary>
+    private static async Task CreateCatalogAsync(string serverConnectionString, string catalog)
+    {
+        var csb = new SqlConnectionStringBuilder(serverConnectionString) { InitialCatalog = "master" };
+        await using var conn = new SqlConnection(csb.ConnectionString);
+        await conn.OpenAsync();
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"CREATE DATABASE [{catalog.Replace("]", "]]")}];";
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// Drops the catalog created by <see cref="CreateCatalogAsync"/>.
+    /// </summary>
+    private static async Task DropCatalogAsync(string serverConnectionString, string catalog)
+    {
+        var csb = new SqlConnectionStringBuilder(serverConnectionString) { InitialCatalog = "master" };
+        await using var conn = new SqlConnection(csb.ConnectionString);
+        await conn.OpenAsync();
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText =
+            $"IF EXISTS (SELECT 1 FROM sys.databases WHERE name = N'{catalog.Replace("'", "''")}') " +
+            $"BEGIN ALTER DATABASE [{catalog.Replace("]", "]]")}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; " +
+            $"DROP DATABASE [{catalog.Replace("]", "]]")}]; END;";
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// Drops + recreates the warm Aspire catalog so each class starts
+    /// from a clean schema. Used only in env-var (Aspire) mode; the
+    /// Testcontainers path gives each class its own catalog and skips
+    /// this entirely.
     /// </summary>
     private static async Task ResetSchemaAsync(string connectionString)
     {
         var csb = new SqlConnectionStringBuilder(connectionString);
         var targetDb = csb.InitialCatalog;
-        // Testcontainers' default GetConnectionString() sets Database=master.
-        // master cannot be dropped (and the ephemeral container is already
-        // clean per test class), so skip the reset; warm-DB env-var setups
-        // are expected to point at a non-master catalog.
         if (string.IsNullOrWhiteSpace(targetDb)
             || string.Equals(targetDb, "master", StringComparison.OrdinalIgnoreCase))
         {
