@@ -105,7 +105,7 @@ phrasing in older notes.
 
 - **Server**: .NET 10 Razor Class Library targeting Umbraco CMS 17.x,
   central package management via `src/Analyzer/Directory.Packages.props`
-  (Umbraco.Cms.Web.Common/.Web.Website pinned at 17.4.1 to match
+  (Umbraco.Cms.Web.Common/.Web.Website pinned at 17.4.2 to match
   Customizer's floor; meta `Umbraco.Cms` packages float on `17.*`).
 - **Backoffice client**: TypeScript + Vite + `@umbraco-cms/backoffice`
   17.3.5, source in `src/Analyzer/Client/`. Bundle output at
