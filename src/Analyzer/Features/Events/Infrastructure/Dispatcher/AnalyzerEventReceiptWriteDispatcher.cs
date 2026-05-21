@@ -39,6 +39,25 @@ internal sealed class AnalyzerEventReceiptWriteDispatcher : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // #47 — same SuppressFlow guard as AnalyzerSessionSweeperService;
+        // see that file for the full rationale. The receipt dispatcher
+        // ticks only when the queue drains so the AmbientContext failure
+        // is quieter here, but the vulnerability shape is identical
+        // (BackgroundService.ExecuteAsync inherits the host-startup
+        // ExecutionContext, leaked Umbraco scope contaminates every
+        // CreateScope() in the loop). Wrap in SuppressFlow + Task.Run
+        // for the same reason; await sits OUTSIDE the using so
+        // AsyncFlowControl.Dispose() runs on the calling thread.
+        Task loop;
+        using (ExecutionContext.SuppressFlow())
+        {
+            loop = Task.Run(() => RunLoopAsync(stoppingToken), stoppingToken);
+        }
+        await loop.ConfigureAwait(false);
+    }
+
+    private async Task RunLoopAsync(CancellationToken stoppingToken)
+    {
         _logger.LogInformation("Analyzer event-receipt dispatcher started");
         try
         {

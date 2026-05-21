@@ -46,6 +46,33 @@ internal sealed class AnalyzerSessionSweeperService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // #47 — BackgroundService.ExecuteAsync runs inside the host
+        // startup pipeline, so its async machinery captures the caller's
+        // ExecutionContext (including Umbraco's ambient-scope AsyncLocal)
+        // into every continuation in the loop. If any startup code held
+        // an Umbraco scope that was later disposed, the leaked ambient
+        // makes IScopeProvider.CreateScope() inside the repository nest
+        // under the dead parent — Scope.Dispose() then throws
+        // "No AmbientContext was found" on every tick. SuppressFlow +
+        // Task.Run reseats the loop on a clean ExecutionContext so every
+        // tick's CreateScope() opens a fresh root.
+        //
+        // The await MUST sit outside the using: AsyncFlowControl.Dispose()
+        // requires the thread that called SuppressFlow(), so awaiting
+        // inside the using lets the continuation hop pool threads and
+        // Dispose throws InvalidOperationException — which bubbles to
+        // BackgroundService's default StopHost behaviour and tears down
+        // the host. Customizer PR #59 caught this in review.
+        Task loop;
+        using (ExecutionContext.SuppressFlow())
+        {
+            loop = Task.Run(() => RunLoopAsync(stoppingToken), stoppingToken);
+        }
+        await loop.ConfigureAwait(false);
+    }
+
+    private async Task RunLoopAsync(CancellationToken stoppingToken)
+    {
         _logger.LogInformation("Analyzer session sweeper started");
         try
         {
