@@ -12,7 +12,7 @@ namespace Analyzer.Features.Search.Infrastructure.Persistence;
 /// <remarks>
 /// <para>
 /// <see cref="ResolvePageviewVisitorBindingAsync"/> reads
-/// <c>customizerPageview</c> via raw SQL — no Customizer DTO import
+/// <c>customizerVisitorPageview</c> via raw SQL — no Customizer DTO import
 /// (Principle III). Projects a single nullable
 /// <c>visitorProfileKey</c>; one indexed read on the pageview's
 /// primary key.
@@ -68,13 +68,13 @@ internal sealed class AnalyzerSearchEventRepository : IAnalyzerSearchEventReposi
         ct.ThrowIfCancellationRequested();
         using var scope = _scopeProvider.CreateScope();
         // Raw SQL read — Principle III: no import of the Customizer-owned
-        // PageviewDto. customizerPageview uses a surrogate INT FK
+        // PageviewDto. customizerVisitorPageview uses a surrogate INT FK
         // (visitorProfileFk → customizerVisitorProfile.id) rather than a
         // Guid FK to .[key]; the join below resolves the surrogate to
         // the public Guid the handler compares against.
         var rows = scope.Database.Fetch<PageviewBindingRow>(
             "SELECT vp.[key] AS VisitorProfileKey, pv.[contentKey] AS ContentKey " +
-            "FROM [customizerPageview] pv " +
+            "FROM [customizerVisitorPageview] pv " +
             "INNER JOIN [customizerVisitorProfile] vp ON vp.[id] = pv.[visitorProfileFk] " +
             "WHERE pv.[key] = @0",
             pageviewKey);
