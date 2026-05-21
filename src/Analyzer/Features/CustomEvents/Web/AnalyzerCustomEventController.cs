@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Api.Common.Attributes;
+using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Web.Common.Authorization;
-using Umbraco.Cms.Web.Common.Routing;
 
 namespace Analyzer.Features.CustomEvents.Web;
 
@@ -37,7 +37,7 @@ namespace Analyzer.Features.CustomEvents.Web;
 /// </para>
 /// </remarks>
 [ApiController]
-[BackOfficeRoute("analyzer/api/v{version:apiVersion}")]
+[VersionedApiBackOfficeRoute(AnalyzerApiConstants.ApiName)]
 [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
 [MapToApi(AnalyzerApiConstants.ApiName)]
 [ApiVersion("1.0")]

@@ -195,9 +195,12 @@ public static class Constants
     {
         /// <summary>
         /// API name used by <see cref="Umbraco.Cms.Api.Common.Attributes.MapToApiAttribute"/>
-        /// and the Swagger document group. Resolves the
-        /// <c>[BackOfficeRoute("analyzer/api/v{version:apiVersion}")]</c>
-        /// prefix to <c>/umbraco/management/api/v1/analyzer/...</c>.
+        /// and the Swagger document group. Also the template passed to
+        /// <c>[VersionedApiBackOfficeRoute(ApiName)]</c> on each
+        /// Analyzer management controller — the attribute prepends
+        /// <c>/umbraco/management/api/v{version:apiVersion}/</c> so the
+        /// final route resolves to
+        /// <c>/umbraco/management/api/v1/analyzer/...</c>.
         /// </summary>
         public const string ApiName = "analyzer";
 
