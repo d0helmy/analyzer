@@ -89,6 +89,19 @@ public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
                         ["ConnectionStrings:umbracoDbDSN"] = connectionString,
                         ["ConnectionStrings:umbracoDbDSN_ProviderName"] = "Microsoft.Data.SqlClient",
                         ["Umbraco:CMS:Unattended:InstallUnattended"] = "true",
+                        // #52 — Umbraco.Forms (referenced by Analyzer.Host but not by
+                        // Customizer.Host) ships a PackageMigrationPlan. With the
+                        // default PackageMigrationsUnattended=true Umbraco enters
+                        // Level=Upgrading and pushes our migration components onto the
+                        // async UnattendedUpgradeBackgroundService, which under
+                        // WebApplicationFactory either doesn't complete or takes >60s.
+                        // Forcing it to false makes Umbraco stay at Level=Run and fire
+                        // the component pipeline synchronously on first boot so
+                        // CustomizerMigrationComponent + AnalyzerMigrationComponent
+                        // create the analyzer*/customizer* tables before any test
+                        // method runs. Umbraco.Forms's own migration is irrelevant for
+                        // these tests and stays pending — harmless.
+                        ["Umbraco:CMS:Unattended:PackageMigrationsUnattended"] = "false",
                         ["Umbraco:CMS:Unattended:UnattendedUserName"] = "Analyzer Test Service Account",
                         ["Umbraco:CMS:Unattended:UnattendedUserEmail"] = "tests@analyzer.local",
                         ["Umbraco:CMS:Unattended:UnattendedUserPassword"] = "Analyzer-Test-123!",
