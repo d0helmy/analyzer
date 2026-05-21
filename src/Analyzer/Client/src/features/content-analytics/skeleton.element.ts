@@ -3,8 +3,7 @@
 // the metric blocks. Shimmer animation honours
 // `prefers-reduced-motion`.
 
-import { LitElement, html, css } from "lit";
-import { customElement } from "lit/decorators.js";
+import { LitElement, html, css, customElement } from "@umbraco-cms/backoffice/external/lit";
 
 @customElement("analyzer-content-analytics-skeleton")
 export class AnalyzerContentAnalyticsSkeleton extends LitElement {
