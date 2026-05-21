@@ -13,7 +13,7 @@ namespace Analyzer.Tests.Integration.Search;
 public abstract class SearchIntegrationTestBase : AnalyzerIntegrationTestBase
 {
     /// <summary>
-    /// Seed one <c>customizerPageview</c> row keyed by the supplied
+    /// Seed one <c>customizerVisitorPageview</c> row keyed by the supplied
     /// <paramref name="pageviewKey"/>, owned by the visitor identified
     /// by <paramref name="visitorKey"/>, and pointing at the supplied
     /// <paramref name="contentKey"/>. Used by the visitor-bound
@@ -25,18 +25,18 @@ public abstract class SearchIntegrationTestBase : AnalyzerIntegrationTestBase
         await SeedVisitorProfileAsync(visitorKey);
         using var scope = ScopeProvider.CreateScope();
         var exists = scope.Database.ExecuteScalar<int>(
-            "SELECT COUNT(*) FROM customizerPageview WHERE [key] = @0",
+            "SELECT COUNT(*) FROM customizerVisitorPageview WHERE [key] = @0",
             pageviewKey);
         if (exists == 0)
         {
             // Resolve the visitor's surrogate id so the FK shape matches
-            // customizerPageview's expected (int) FK target.
+            // customizerVisitorPageview's expected (int) FK target.
             var visitorFk = scope.Database.ExecuteScalar<int>(
                 "SELECT [id] FROM customizerVisitorProfile WHERE [key] = @0",
                 visitorKey);
 
             scope.Database.Execute(
-                "INSERT INTO [customizerPageview] " +
+                "INSERT INTO [customizerVisitorPageview] " +
                 "([key], [visitorProfileFk], [contentKey], [pageviewSegmentsJson], " +
                 " [wasContentTombstoned], [requestUtc]) " +
                 "VALUES (@0, @1, @2, '[]', 0, @3)",
