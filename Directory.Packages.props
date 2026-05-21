@@ -3,8 +3,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- Allow `17.*` floating on host-side Umbraco meta-packages so the
          sample host tracks Umbraco minor releases without per-bump
-         edits. RCL packages pinned to 17.4.1 to match Customizer's
-         floor (Customizer commit c98687f). -->
+         edits. RCL packages pinned to 17.4.2 to match Customizer's
+         floor. -->
     <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
     <!-- Allow PackageVersion entries below to pin transitive packages
          (MailKit + System.Security.Cryptography.Xml advisory bumps,
@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <!--
-    Umbraco — pinned to 17.4.1 per Constitution Tech Stack constraint.
+    Umbraco — pinned to 17.4.2 per Constitution Tech Stack constraint.
     Package selection mirrors Customizer's choices for symmetry
     between the two co-deployed products (see
     ../customizer/Directory.Packages.props). The floor must match
@@ -27,8 +27,8 @@
     host (samples/Analyzer.Host) for clone-and-go local dev.
   -->
   <ItemGroup>
-    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="17.4.1" />
-    <PackageVersion Include="Umbraco.Cms.Web.Website" Version="17.4.1" />
+    <PackageVersion Include="Umbraco.Cms.Web.Common" Version="17.4.2" />
+    <PackageVersion Include="Umbraco.Cms.Web.Website" Version="17.4.2" />
     <PackageVersion Include="Umbraco.Cms" Version="17.*" />
     <PackageVersion Include="Umbraco.Cms.DevelopmentMode.Backoffice" Version="17.*" />
     <!-- Slice 005 — Umbraco.Forms 17.x pin. Floating range tolerates host
