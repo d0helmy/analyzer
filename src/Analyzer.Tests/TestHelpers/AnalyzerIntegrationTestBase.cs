@@ -38,6 +38,7 @@ namespace Analyzer.Tests.TestHelpers;
 /// default. CI invokes both traits explicitly.
 /// </para>
 /// </remarks>
+[Collection("AnalyzerIntegration")]
 public abstract class AnalyzerIntegrationTestBase : IAsyncLifetime
 {
     private const string EnvConnectionString = "ConnectionStrings__umbracoDbDSN";
