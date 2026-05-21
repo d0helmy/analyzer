@@ -63,6 +63,23 @@
   </ItemGroup>
 
   <!--
+    Microsoft.Extensions — pinned to 10.5.0 to match Customizer's
+    Service-defaults pin (see ../customizer/Directory.Packages.props
+    "Service defaults" group). Customizer.dll's
+    `WebhookHttpClientFactory.AddWebhookHttpClient` and other Service-
+    defaults extensions are compiled against 10.5.0; without an
+    Analyzer-side pin, MSBuild resolves Analyzer.Host's transitive
+    10.3.0 as primary (silenced MSB3277) and the runtime hits
+    `FileNotFoundException: Microsoft.Extensions.Http.Resilience
+    Version=10.5.0.0` the moment `ComposerGraph.Compose()` walks
+    Customizer.Composers.WebhookDispatcherComposer.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="10.5.0" />
+  </ItemGroup>
+
+  <!--
     Customizer — currently consumed via a sibling <ProjectReference> in
     src/Analyzer/Analyzer.csproj because Customizer is not yet
     NuGet-published (its csproj declares <PackageId>Customizer</PackageId>
