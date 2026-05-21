@@ -37,7 +37,10 @@ export function startScrollObserver(opts: ScrollObserverOptions): void {
     return;
   }
   if (opts.pageviewKey.length === 0 || opts.contentKey.length === 0) {
-    console.warn(
+    // By-design skip when mounted in contexts (e.g. Umbraco backoffice)
+    // that don't emit a pageview — debug-level so it doesn't surface in
+    // the default browser console.
+    console.debug(
       "[analyzer] scroll-tracking init skipped — missing pageviewKey or contentKey",
     );
     return;
